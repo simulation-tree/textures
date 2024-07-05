@@ -54,8 +54,8 @@ namespace Textures
 
             //todo: find an algo for packing that auto finds the max size
             float spriteMaxDimension = Math.Max(maxSpriteSize.X, maxSpriteSize.Y) + padding;
-            uint maxSpritesPerAxis = (uint)Math.Pow(2, Math.Ceiling(Math.Log2(spriteCount)));
-            uint dimensionSize = (uint)(Math.Sqrt(maxSpritesPerAxis) * spriteMaxDimension);
+            uint maxSpritesPerAxis = (uint)Math.Pow(2, Math.Ceiling(Math.Log2(Math.Sqrt(spriteCount))));
+            uint dimensionSize = (uint)(maxSpritesPerAxis * spriteMaxDimension);
             dimensionSize = (uint)Math.Pow(2, Math.Ceiling(Math.Log2(dimensionSize)));
             Vector2 atlasSize = new(dimensionSize, dimensionSize);
 
@@ -109,12 +109,12 @@ namespace Textures
             return texture.Get(x, y);
         }
 
-        public readonly Color Evaluate(Vector2 position)
+        public readonly Vector4 Evaluate(Vector2 position)
         {
             return texture.Evaluate(position);
         }
 
-        public readonly Color Evaluate(float x, float y)
+        public readonly Vector4 Evaluate(float x, float y)
         {
             return texture.Evaluate(x, y);
         }
