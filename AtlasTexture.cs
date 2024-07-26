@@ -1,41 +1,28 @@
-﻿using Simulation;
+﻿using BinPacking;
+using Simulation;
 using System;
 using System.Numerics;
 using Textures.Components;
+using Unmanaged;
 using Unmanaged.Collections;
 
 namespace Textures
 {
-    public readonly struct AtlasTexture : IDisposable
+    public readonly struct AtlasTexture : IAtlasTexture, IDisposable
     {
         public readonly Texture texture;
 
-        private readonly UnmanagedList<Sprite> sprites;
-
-        public readonly bool IsDestroyed => texture.IsDestroyed;
-        public readonly Span<Pixel> Pixels => texture.Pixels;
-        public readonly Span<Sprite> Sprites => sprites.AsSpan();
-        public readonly TextureSize Size => texture.Size;
-        public readonly uint Width => texture.Width;
-        public readonly uint Height => texture.Height;
+        World IEntity.World => texture.entity.world;
+        eint IEntity.Value => texture.entity.value;
 
         public AtlasTexture()
         {
             throw new InvalidOperationException("Cannot create an atlas texture without data.");
         }
 
-        public AtlasTexture(World world, EntityID existingEntity)
+        public AtlasTexture(World world, eint existingEntity)
         {
             texture = new(world, existingEntity);
-            sprites = texture.entity.GetCollection<Sprite>();
-        }
-
-        public AtlasTexture(Texture existingTexture, ReadOnlySpan<Sprite> sprites)
-        {
-            texture = existingTexture;
-            this.sprites = texture.entity.CreateCollection<Sprite>();
-            this.sprites.AddDefault((uint)sprites.Length);
-            sprites.CopyTo(this.sprites.AsSpan());
         }
 
         public AtlasTexture(World world, ReadOnlySpan<InputSprite> sprites, uint padding = 0)
@@ -47,49 +34,42 @@ namespace Textures
             for (uint i = 0; i < spriteCount; i++)
             {
                 InputSprite inputSprite = sprites[(int)i];
-                Vector2 spriteSize = inputSprite.size.AsVector2();
+                Vector2 spriteSize = new Vector2(inputSprite.width, inputSprite.height);
                 sizes[i] = spriteSize;
                 maxSpriteSize = Vector2.Max(maxSpriteSize, spriteSize);
             }
 
-            //todo: find an algo for packing that auto finds the max size
-            float spriteMaxDimension = Math.Max(maxSpriteSize.X, maxSpriteSize.Y) + padding;
-            uint maxSpritesPerAxis = (uint)Math.Pow(2, Math.Ceiling(Math.Log2(Math.Sqrt(spriteCount))));
-            uint dimensionSize = (uint)(maxSpritesPerAxis * spriteMaxDimension);
-            dimensionSize = (uint)Math.Pow(2, Math.Ceiling(Math.Log2(dimensionSize)));
-            Vector2 atlasSize = new(dimensionSize, dimensionSize);
-
-            texture = new(world, dimensionSize, dimensionSize);
-            this.sprites = texture.entity.CreateCollection<Sprite>((uint)sprites.Length);
-
-            Span<Pixel> pixels = texture.Pixels;
-            for (uint i = 0; i < sprites.Length; i++)
+            RecursivePacker packer = new();
+            Span<Vector2> positions = stackalloc Vector2[spriteCount];
+            Vector2 maxSize = packer.Pack(sizes.AsSpan(), positions, padding);
+            uint atlasWidth = (uint)maxSize.X;
+            uint atlasHeight = (uint)maxSize.Y;
+            texture = new(world, atlasWidth, atlasHeight);
+            UnmanagedList<AtlasSprite> spritesList = texture.entity.CreateList<Entity, AtlasSprite>((uint)sprites.Length);
+            Span<Pixel> pixels = texture.GetPixels();
+            for (int i = 0; i < sprites.Length; i++)
             {
-                InputSprite sprite = sprites[(int)i];
-                char unicode = (char)i;
-                uint atlasX = i % (maxSpritesPerAxis);
-                uint atlasY = i / (maxSpritesPerAxis);
-                Vector2 position = new(atlasX * (spriteMaxDimension), atlasY * (spriteMaxDimension));
-                uint x = (uint)(position.X + padding);
-                uint y = (uint)(position.Y + padding);
-                uint gWidth = sprite.size.width;
-                uint gHeight = sprite.size.height;
-                Vector4 region = new(x / atlasSize.X, y / atlasSize.Y, gWidth / atlasSize.X, gHeight / atlasSize.Y);
-                region.Y += region.W;
-                region.W *= -1;
-
-                this.sprites.Add(new(sprite.Name, region));
-
-                ReadOnlySpan<Pixel> spritePixels = sprite.Pixels;
+                InputSprite sprite = sprites[i];
+                Vector2 position = positions[i];
+                Vector2 size = sizes[(uint)i];
+                uint x = (uint)position.X;
+                uint y = (uint)position.Y;
+                uint width = (uint)size.X;
+                uint height = (uint)size.Y;
+                Span<Pixel> spritePixels = sprite.Pixels;
                 for (uint p = 0; p < spritePixels.Length; p++)
                 {
                     Pixel spritePixel = spritePixels[(int)p];
-                    uint localX = p % gWidth;
-                    uint localY = p / gWidth;
-                    uint index = x + localX + (y + localY) * dimensionSize;
+                    uint px = p % width;
+                    uint py = p / width;
+                    uint index = x + px + ((y + py) * atlasWidth);
                     pixels[(int)index] = spritePixel;
                 }
 
+                Vector4 uv = new(x / (float)atlasWidth, y / (float)atlasHeight, width / (float)atlasWidth, height / (float)atlasHeight);
+                uv.Y += uv.W;
+                uv.W *= -1;
+                spritesList.Add(new(sprite.Name, uv));
                 sprite.Dispose();
             }
         }
@@ -104,29 +84,29 @@ namespace Textures
             return texture.ToString();
         }
 
-        public readonly Pixel Get(uint x, uint y)
+        public static Query GetQuery(World world)
         {
-            return texture.Get(x, y);
-        }
-
-        public readonly Vector4 Evaluate(Vector2 position)
-        {
-            return texture.Evaluate(position);
-        }
-
-        public readonly Vector4 Evaluate(float x, float y)
-        {
-            return texture.Evaluate(x, y);
+            //todo: either make the query say that it looks for entities with a list,
+            //or have a component that says "i have a list"
+            return new(world, RuntimeType.Get<IsTexture>());
         }
 
         public readonly struct InputSprite : IDisposable
         {
-            public readonly TextureSize size;
+            public readonly uint width;
+            public readonly uint height;
 
             private readonly UnmanagedArray<char> name;
             private readonly UnmanagedArray<Pixel> pixels;
 
+            /// <summary>
+            /// Name of the sprite.
+            /// </summary>
             public readonly ReadOnlySpan<char> Name => name.AsSpan();
+
+            /// <summary>
+            /// All pixels of this sprite.
+            /// </summary>
             public readonly Span<Pixel> Pixels => pixels.AsSpan();
 
             public InputSprite()
@@ -134,9 +114,10 @@ namespace Textures
                 throw new InvalidOperationException("Cannot create an input sprite without data.");
             }
 
-            public InputSprite(ReadOnlySpan<char> name, TextureSize size, ReadOnlySpan<byte> inputData, Channels channels)
+            public InputSprite(ReadOnlySpan<char> name, uint width, uint height, ReadOnlySpan<byte> inputData, Channels channels)
             {
-                this.size = size;
+                this.width = width;
+                this.height = height;
                 this.name = new(name);
                 pixels = new((uint)inputData.Length);
 
@@ -155,11 +136,12 @@ namespace Textures
                 }
             }
 
-            public InputSprite(ReadOnlySpan<char> name, TextureSize size)
+            public InputSprite(ReadOnlySpan<char> name, uint width, uint height)
             {
-                this.size = size;
+                this.width = width;
+                this.height = height;
                 this.name = new(name);
-                pixels = new(size.width * size.height);
+                pixels = new(width * height);
             }
 
             public readonly void Dispose()

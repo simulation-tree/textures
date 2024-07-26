@@ -4,18 +4,18 @@ using Unmanaged;
 
 namespace Textures
 {
-    public struct Sprite
+    public struct AtlasSprite
     {
         public FixedString name;
         public Vector4 region;
 
-        public Sprite(ReadOnlySpan<char> name, Vector4 region)
+        public AtlasSprite(ReadOnlySpan<char> name, Vector4 region)
         {
             this.name = name;
             this.region = region;
         }
 
-        public Sprite(FixedString name, Vector4 region)
+        public AtlasSprite(FixedString name, Vector4 region)
         {
             this.name = name;
             this.region = region;

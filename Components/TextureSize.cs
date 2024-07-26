@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 
 namespace Textures.Components
 {
@@ -21,11 +20,6 @@ namespace Textures.Components
             buffer[length++] = 'x';
             height.TryFormat(buffer[length..], out int length2);
             return new string(buffer[..(length + length2)]);
-        }
-
-        public readonly Vector2 AsVector2()
-        {
-            return new(width, height);
         }
     }
 }
