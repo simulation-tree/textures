@@ -10,10 +10,10 @@ namespace Textures
 {
     public readonly struct AtlasTexture : IAtlasTexture, IDisposable
     {
-        public readonly Texture texture;
+        private readonly Texture texture;
 
-        World IEntity.World => texture.entity.world;
-        eint IEntity.Value => texture.entity.value;
+        World IEntity.World => texture.GetWorld();
+        eint IEntity.Value => texture.GetEntityValue();
 
         public AtlasTexture()
         {
@@ -45,7 +45,7 @@ namespace Textures
             uint atlasWidth = (uint)maxSize.X;
             uint atlasHeight = (uint)maxSize.Y;
             texture = new(world, atlasWidth, atlasHeight);
-            UnmanagedList<AtlasSprite> spritesList = texture.entity.CreateList<Entity, AtlasSprite>((uint)sprites.Length);
+            UnmanagedList<AtlasSprite> spritesList = texture.CreateList<Texture, AtlasSprite>((uint)sprites.Length);
             Span<Pixel> pixels = texture.GetPixels();
             for (int i = 0; i < sprites.Length; i++)
             {
