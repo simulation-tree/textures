@@ -27,7 +27,7 @@ namespace Textures
         public Texture(World world, uint width, uint height, Pixel defaultPixel = default)
         {
             entity = new(world);
-            entity.AddComponent(new IsTexture(false));
+            entity.AddComponent(new IsTexture());
             entity.AddComponent(new TextureSize(width, height));
 
             uint pixelCount = width * height;
@@ -38,7 +38,7 @@ namespace Textures
         public Texture(World world, uint width, uint height, ReadOnlySpan<Pixel> pixels)
         {
             entity = new(world);
-            entity.AddComponent(new IsTexture(false));
+            entity.AddComponent(new IsTexture());
             entity.AddComponent(new TextureSize(width, height));
 
             UnmanagedList<Pixel> list = entity.CreateList<Entity, Pixel>((uint)pixels.Length);

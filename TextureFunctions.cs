@@ -6,44 +6,49 @@ using Unmanaged.Collections;
 
 public static class TextureFunctions
 {
-    public static (uint width, uint height) GetSize<T>(this T texture) where T : unmanaged, ITexture
+    public static (uint width, uint height) GetSize<T>(this T texture) where T : ITexture
     {
         TextureSize size = texture.GetComponent<T, TextureSize>();
         return (size.width, size.height);
     }
 
-    public static uint GetWidth<T>(this T texture) where T : unmanaged, ITexture
+    public static uint GetVersion<T>(this T texture) where T : ITexture
+    {
+        return texture.GetComponent<T, IsTexture>().version;
+    }
+
+    public static uint GetWidth<T>(this T texture) where T : ITexture
     {
         return texture.GetSize().width;
     }
 
-    public static uint GetHeight<T>(this T texture) where T : unmanaged, ITexture
+    public static uint GetHeight<T>(this T texture) where T : ITexture
     {
         return texture.GetSize().height;
     }
 
-    public static Span<Pixel> GetPixels<T>(this T texture) where T : unmanaged, ITexture
+    public static Span<Pixel> GetPixels<T>(this T texture) where T : ITexture
     {
         return texture.GetList<T, Pixel>().AsSpan();
     }
 
-    public static Pixel Get<T>(this T texture, uint x, uint y) where T : unmanaged, ITexture
+    public static Pixel Get<T>(this T texture, uint x, uint y) where T : ITexture
     {
         UnmanagedList<Pixel> pixels = texture.GetList<T, Pixel>();
-        (uint width, uint height) size = texture.GetSize();
-        if (x >= size.width || y >= size.height)
+        (uint width, uint height) = texture.GetSize();
+        if (x >= width || y >= height)
         {
-            throw new ArgumentOutOfRangeException(nameof(x), "Position must be within the texture.");
+            throw new ArgumentOutOfRangeException(null, "Position must be within the texture.");
         }
 
-        return pixels[y * size.width + x];
+        return pixels[y * width + x];
     }
 
-    public static Vector4 Evaluate<T>(this T texture, Vector2 position) where T : unmanaged, ITexture
+    public static Vector4 Evaluate<T>(this T texture, Vector2 position) where T : ITexture
     {
         if (position.X < 0 || position.X > 1 || position.Y < 0 || position.Y > 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(position), "Position must be normalized.");
+            throw new ArgumentOutOfRangeException(nameof(position), "Position must be normalized within the 0-1 range.");
         }
 
         (uint width, uint height) size = texture.GetSize();
@@ -67,7 +72,7 @@ public static class TextureFunctions
         return Vector4.Lerp(top, bottom, yFactor);
     }
 
-    public static Vector4 Evaluate<T>(this T texture, float x, float y) where T : unmanaged, ITexture
+    public static Vector4 Evaluate<T>(this T texture, float x, float y) where T : ITexture
     {
         return texture.Evaluate(new Vector2(x, y));
     }
