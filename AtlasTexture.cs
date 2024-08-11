@@ -84,7 +84,7 @@ namespace Textures
             return texture.ToString();
         }
 
-        public static Query GetQuery(World world)
+        static Query IEntity.GetQuery(World world)
         {
             //todo: either make the query say that it looks for entities with a list,
             //or have a component that says "i have a list"
