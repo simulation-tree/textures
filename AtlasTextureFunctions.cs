@@ -33,7 +33,7 @@ public static class AtlasTextureFunctions
     {
         if (!atlasTexture.TryGetSprite(name, out AtlasSprite sprite))
         {
-            throw new InvalidOperationException($"Sprite '{name}' not found in atlas texture");
+            throw new InvalidOperationException($"Sprite named `{name.ToString()}` not found in atlas texture `{atlasTexture}`");
         }
 
         return sprite;

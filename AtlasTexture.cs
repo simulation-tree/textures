@@ -15,10 +15,13 @@ namespace Textures
         World IEntity.World => texture.GetWorld();
         eint IEntity.Value => texture.GetEntityValue();
 
+#if NET
+        [Obsolete("Default constructor not available.", true)]
         public AtlasTexture()
         {
             throw new InvalidOperationException("Cannot create an atlas texture without data.");
         }
+#endif
 
         public AtlasTexture(World world, eint existingEntity)
         {
@@ -109,10 +112,13 @@ namespace Textures
             /// </summary>
             public readonly Span<Pixel> Pixels => pixels.AsSpan();
 
+#if NET
+            [Obsolete("Default constructor not available", true)]
             public InputSprite()
             {
                 throw new InvalidOperationException("Cannot create an input sprite without data.");
             }
+#endif
 
             public InputSprite(ReadOnlySpan<char> name, uint width, uint height, ReadOnlySpan<byte> inputData, Channels channels)
             {

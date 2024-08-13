@@ -1,0 +1,19 @@
+{
+    "name": "Textures",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a9fd0dabe3d39ac4fa7aad759409e439",
+        "GUID:21cb637cc1e869c469489b37581b0535",
+        "GUID:b71b6c3d025821042a14d4d2c7fc7a1c",
+        "GUID:c4627681352bfa84086b642b92338a83"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
