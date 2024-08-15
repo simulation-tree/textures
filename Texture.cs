@@ -62,6 +62,19 @@ namespace Textures
             world.Poll();
         }
 
+        public Texture(World world, FixedString address)
+        {
+            entity = new(world);
+            entity.AddComponent(new IsDataRequest(address));
+            entity.AddComponent(new TextureSize(0, 0));
+            entity.AddComponent(new IsTexture());
+            entity.CreateList<Entity, Pixel>();
+
+            world.Submit(new DataUpdate());
+            world.Submit(new TextureUpdate());
+            world.Poll();
+        }
+
         public readonly void Dispose()
         {
             entity.Dispose();
