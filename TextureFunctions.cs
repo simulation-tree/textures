@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Data.Components;
+using System;
 using System.Numerics;
 using Textures;
 using Textures.Components;
+using Unmanaged;
 using Unmanaged.Collections;
 
 public static class TextureFunctions
@@ -10,6 +12,16 @@ public static class TextureFunctions
     {
         TextureSize size = texture.GetComponent<T, TextureSize>();
         return (size.width, size.height);
+    }
+
+    public static bool IsRequesting<T>(this T texture) where T : ITexture
+    {
+        return texture.ContainsComponent<T, IsDataRequest>();
+    }
+
+    public static FixedString GetRequestAddress<T>(this T texture) where T : ITexture
+    {
+        return texture.GetComponent<T, IsDataRequest>().address;
     }
 
     public static uint GetVersion<T>(this T texture) where T : ITexture
