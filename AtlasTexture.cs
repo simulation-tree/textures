@@ -12,8 +12,13 @@ namespace Textures
     {
         private readonly Texture texture;
 
-        World IEntity.World => texture.GetWorld();
-        eint IEntity.Value => texture.GetEntityValue();
+        public readonly ReadOnlySpan<AtlasSprite> Sprites => ((Entity)texture).GetList<AtlasSprite>().AsSpan();
+        public readonly (uint width, uint height) Size => texture.Size;
+        public readonly uint Width => texture.Width;
+        public readonly uint Height => texture.Height;
+
+        World IEntity.World => ((Entity)texture).world;
+        eint IEntity.Value => ((Entity)texture).value;
 
 #if NET
         [Obsolete("Default constructor not available.", true)]
@@ -37,7 +42,7 @@ namespace Textures
             for (uint i = 0; i < spriteCount; i++)
             {
                 InputSprite inputSprite = sprites[(int)i];
-                Vector2 spriteSize = new Vector2(inputSprite.width, inputSprite.height);
+                Vector2 spriteSize = new(inputSprite.width, inputSprite.height);
                 sizes[i] = spriteSize;
                 maxSpriteSize = Vector2.Max(maxSpriteSize, spriteSize);
             }
@@ -48,8 +53,8 @@ namespace Textures
             uint atlasWidth = (uint)maxSize.X;
             uint atlasHeight = (uint)maxSize.Y;
             texture = new(world, atlasWidth, atlasHeight);
-            UnmanagedList<AtlasSprite> spritesList = texture.CreateList<Texture, AtlasSprite>((uint)sprites.Length);
-            Span<Pixel> pixels = texture.GetPixels();
+            UnmanagedList<AtlasSprite> spritesList = ((Entity)texture).CreateList<AtlasSprite>((uint)sprites.Length);
+            Span<Pixel> pixels = texture.Pixels;
             for (int i = 0; i < sprites.Length; i++)
             {
                 InputSprite sprite = sprites[i];
@@ -87,11 +92,78 @@ namespace Textures
             return texture.ToString();
         }
 
-        Query IEntity.GetQuery(World world)
+        readonly Query IEntity.GetQuery(World world)
         {
             //todo: either make the query say that it looks for entities with a list,
-            //or have a component that says "i have a list"
+            //or have a component that says "i have a list", because a texture is the same as an atlas texture according to this...
             return new(world, RuntimeType.Get<IsTexture>());
+        }
+
+        public readonly bool TryGetSprite(ReadOnlySpan<char> name, out AtlasSprite sprite)
+        {
+            ReadOnlySpan<AtlasSprite> sprites = Sprites;
+            for (int i = 0; i < sprites.Length; i++)
+            {
+                if (sprites[i].name.Equals(name))
+                {
+                    sprite = sprites[i];
+                    return true;
+                }
+            }
+
+            sprite = default;
+            return false;
+        }
+
+        public readonly AtlasSprite GetSprite(ReadOnlySpan<char> name)
+        {
+            if (!TryGetSprite(name, out AtlasSprite sprite))
+            {
+                throw new InvalidOperationException($"Sprite named `{name.ToString()}` not found in atlas texture `{texture}`");
+            }
+
+            return sprite;
+        }
+
+        public readonly AtlasSprite GetSprite(uint index)
+        {
+            ReadOnlySpan<AtlasSprite> sprites = Sprites;
+            if (index >= sprites.Length)
+            {
+                throw new IndexOutOfRangeException($"Index {index} out of range");
+            }
+
+            return sprites[(int)index];
+        }
+
+        public readonly Pixel Get(uint x, uint y)
+        {
+            return texture.Get(x, y);
+        }
+
+        public readonly void Set(uint x, uint y, Pixel pixel)
+        {
+            texture.Set(x, y, pixel);
+        }
+
+        public readonly Vector4 Evaluate(Vector2 position)
+        {
+            return texture.Evaluate(position);
+        }
+
+        public readonly Vector4 Evaluate(float x, float y)
+        {
+            return texture.Evaluate(x, y);
+        }
+
+        public static implicit operator Texture(AtlasTexture atlasTexture)
+        {
+            return atlasTexture.texture;
+        }
+
+        public static implicit operator Entity(AtlasTexture atlasTexture)
+        {
+            return atlasTexture.texture;
         }
 
         public readonly struct InputSprite : IDisposable
