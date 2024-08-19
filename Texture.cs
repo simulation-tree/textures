@@ -65,7 +65,7 @@ namespace Textures
         }
 
         /// <summary>
-        /// Creates a texture that loads from the given address.
+        /// Creates a texture+request that loads from the given address.
         /// </summary>
         public Texture(World world, ReadOnlySpan<char> address)
         {
@@ -74,6 +74,9 @@ namespace Textures
             entity.AddComponent(new IsTextureRequest());
         }
 
+        /// <summary>
+        /// Creates a texture+request that loads from the given address.
+        /// </summary>
         public Texture(World world, FixedString address)
         {
             DataRequest request = new(world, address);
