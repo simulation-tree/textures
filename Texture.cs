@@ -1,10 +1,9 @@
-﻿using Data.Components;
-using Data.Events;
+﻿using Data;
 using Simulation;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Textures.Components;
-using Textures.Events;
 using Unmanaged;
 using Unmanaged.Collections;
 
@@ -18,14 +17,22 @@ namespace Textures
         {
             get
             {
-                TextureSize size = entity.GetComponent<TextureSize>();
-                return (size.width, size.height);
+                ThrowIfDataNotLoadedYet();
+                IsTexture component = entity.GetComponent<IsTexture>();
+                return (component.width, component.height);
             }
         }
 
         public readonly uint Width => Size.width;
         public readonly uint Height => Size.height;
-        public readonly Span<Pixel> Pixels => entity.GetList<Pixel>().AsSpan();
+        public readonly Span<Pixel> Pixels
+        {
+            get
+            {
+                ThrowIfDataNotLoadedYet();
+                return entity.GetList<Pixel>().AsSpan();
+            }
+        }
 
         World IEntity.World => entity.world;
         eint IEntity.Value => entity.value;
@@ -41,8 +48,7 @@ namespace Textures
         public Texture(World world, uint width, uint height, Pixel defaultPixel = default)
         {
             entity = new(world);
-            entity.AddComponent(new IsTexture());
-            entity.AddComponent(new TextureSize(width, height));
+            entity.AddComponent(new IsTexture(width, height));
 
             uint pixelCount = width * height;
             UnmanagedList<Pixel> list = entity.CreateList<Pixel>(pixelCount);
@@ -52,12 +58,10 @@ namespace Textures
         public Texture(World world, uint width, uint height, ReadOnlySpan<Pixel> pixels)
         {
             entity = new(world);
-            entity.AddComponent(new IsTexture());
-            entity.AddComponent(new TextureSize(width, height));
+            entity.AddComponent(new IsTexture(width, height));
 
             UnmanagedList<Pixel> list = entity.CreateList<Pixel>((uint)pixels.Length);
-            list.AddDefault((uint)pixels.Length);
-            pixels.CopyTo(list.AsSpan());
+            list.AddRange(pixels);
         }
 
         /// <summary>
@@ -65,28 +69,16 @@ namespace Textures
         /// </summary>
         public Texture(World world, ReadOnlySpan<char> address)
         {
-            entity = new(world);
-            entity.AddComponent(new IsDataRequest(address));
-            entity.AddComponent(new TextureSize(0, 0));
-            entity.AddComponent(new IsTexture());
-            entity.CreateList<Pixel>();
-
-            world.Submit(new DataUpdate());
-            world.Submit(new TextureUpdate());
-            world.Poll();
+            DataRequest request = new(world, address);
+            entity = (Entity)request;
+            entity.AddComponent(new IsTextureRequest());
         }
 
         public Texture(World world, FixedString address)
         {
-            entity = new(world);
-            entity.AddComponent(new IsDataRequest(address));
-            entity.AddComponent(new TextureSize(0, 0));
-            entity.AddComponent(new IsTexture());
-            entity.CreateList<Pixel>();
-
-            world.Submit(new DataUpdate());
-            world.Submit(new TextureUpdate());
-            world.Poll();
+            DataRequest request = new(world, address);
+            entity = (Entity)request;
+            entity.AddComponent(new IsTextureRequest());
         }
 
         public readonly void Dispose()
@@ -104,14 +96,13 @@ namespace Textures
             return new(world, RuntimeType.Get<IsTexture>());
         }
 
-        public readonly bool IsRequesting()
+        [Conditional("DEBUG")]
+        private readonly void ThrowIfDataNotLoadedYet()
         {
-            return entity.ContainsComponent<IsDataRequest>();
-        }
-
-        public readonly FixedString GetRequestAddress()
-        {
-            return entity.GetComponent<IsDataRequest>().address;
+            if (!entity.ContainsComponent<IsTexture>())
+            {
+                throw new InvalidOperationException($"Texture entity `{entity}` is not yet loaded");
+            }
         }
 
         public readonly uint GetVersion()
@@ -121,6 +112,7 @@ namespace Textures
 
         public readonly Pixel Get(uint x, uint y)
         {
+            ThrowIfDataNotLoadedYet();
             UnmanagedList<Pixel> pixels = entity.GetList<Pixel>();
             (uint width, uint height) = Size;
             if (x >= width || y >= height)
@@ -133,6 +125,7 @@ namespace Textures
 
         public readonly void Set(uint x, uint y, Pixel pixel)
         {
+            ThrowIfDataNotLoadedYet();
             UnmanagedList<Pixel> pixels = entity.GetList<Pixel>();
             (uint width, uint height) = Size;
             if (x >= width || y >= height)
@@ -143,8 +136,9 @@ namespace Textures
             pixels[y * width + x] = pixel;
         }
 
-        public readonly Vector4 Evaluate(Vector2 position)
+        public readonly Color Evaluate(Vector2 position)
         {
+            ThrowIfDataNotLoadedYet();
             if (position.X < 0 || position.X > 1 || position.Y < 0 || position.Y > 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(position), "Position must be normalized within the 0-1 range.");
@@ -168,10 +162,10 @@ namespace Textures
             float yFactor = position.Y * maxHeight - y;
             Vector4 top = Vector4.Lerp(topLeft, topRight, xFactor);
             Vector4 bottom = Vector4.Lerp(bottomLeft, bottomRight, xFactor);
-            return Vector4.Lerp(top, bottom, yFactor);
+            return new(Vector4.Lerp(top, bottom, yFactor));
         }
 
-        public readonly Vector4 Evaluate(float x, float y)
+        public readonly Color Evaluate(float x, float y)
         {
             return Evaluate(new Vector2(x, y));
         }

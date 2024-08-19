@@ -1,4 +1,5 @@
 ﻿using BinPacking;
+using Data;
 using Simulation;
 using System;
 using System.Numerics;
@@ -146,12 +147,12 @@ namespace Textures
             texture.Set(x, y, pixel);
         }
 
-        public readonly Vector4 Evaluate(Vector2 position)
+        public readonly Color Evaluate(Vector2 position)
         {
             return texture.Evaluate(position);
         }
 
-        public readonly Vector4 Evaluate(float x, float y)
+        public readonly Color Evaluate(float x, float y)
         {
             return texture.Evaluate(x, y);
         }
