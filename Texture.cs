@@ -34,8 +34,8 @@ namespace Textures
             }
         }
 
-        World IEntity.World => entity.world;
-        eint IEntity.Value => entity.value;
+        World IEntity.World => entity;
+        eint IEntity.Value => entity;
 
         public Texture(World world, eint existingEntity)
         {
@@ -70,7 +70,7 @@ namespace Textures
         public Texture(World world, ReadOnlySpan<char> address)
         {
             DataEntity request = new(world, address);
-            entity = (Entity)request;
+            entity = request;
             entity.AddComponent(new IsTextureRequest());
         }
 
@@ -80,7 +80,7 @@ namespace Textures
         public Texture(World world, FixedString address)
         {
             DataEntity request = new(world, address);
-            entity = (Entity)request;
+            entity = request;
             entity.AddComponent(new IsTextureRequest());
         }
 

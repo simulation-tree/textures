@@ -18,8 +18,8 @@ namespace Textures
         public readonly uint Width => texture.Width;
         public readonly uint Height => texture.Height;
 
-        World IEntity.World => ((Entity)texture).world;
-        eint IEntity.Value => ((Entity)texture).value;
+        World IEntity.World => (Entity)texture;
+        eint IEntity.Value => (Entity)texture;
 
 #if NET
         [Obsolete("Default constructor not available.", true)]
