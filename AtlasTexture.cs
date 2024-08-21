@@ -17,6 +17,8 @@ namespace Textures
         public readonly (uint width, uint height) Size => texture.Size;
         public readonly uint Width => texture.Width;
         public readonly uint Height => texture.Height;
+        public readonly uint SpriteCount => ((Entity)texture).GetListLength<AtlasSprite>();
+        public readonly AtlasSprite this[uint index] => ((Entity)texture).GetListElement<AtlasSprite>(index);
 
         World IEntity.World => (Entity)texture;
         eint IEntity.Value => (Entity)texture;
@@ -34,11 +36,15 @@ namespace Textures
             texture = new(world, existingEntity);
         }
 
+        /// <summary>
+        /// Creates a new atlas from the given input sprites
+        /// into the smallest size possible.
+        /// </summary>
         public AtlasTexture(World world, ReadOnlySpan<InputSprite> sprites, uint padding = 0)
         {
             //find the max sprite size
-            int spriteCount = sprites.Length;
-            using UnmanagedArray<Vector2> sizes = new((uint)spriteCount);
+            uint spriteCount = (uint)sprites.Length;
+            using UnmanagedArray<Vector2> sizes = new(spriteCount);
             Vector2 maxSpriteSize = default;
             for (uint i = 0; i < spriteCount; i++)
             {
@@ -49,14 +55,14 @@ namespace Textures
             }
 
             RecursivePacker packer = new();
-            Span<Vector2> positions = stackalloc Vector2[spriteCount];
+            Span<Vector2> positions = stackalloc Vector2[(int)spriteCount];
             Vector2 maxSize = packer.Pack(sizes.AsSpan(), positions, padding);
             uint atlasWidth = (uint)maxSize.X;
             uint atlasHeight = (uint)maxSize.Y;
             texture = new(world, atlasWidth, atlasHeight);
-            UnmanagedList<AtlasSprite> spritesList = ((Entity)texture).CreateList<AtlasSprite>((uint)sprites.Length);
+            UnmanagedList<AtlasSprite> spritesList = ((Entity)texture).CreateList<AtlasSprite>(spriteCount);
             Span<Pixel> pixels = texture.Pixels;
-            for (int i = 0; i < sprites.Length; i++)
+            for (int i = 0; i < spriteCount; i++)
             {
                 InputSprite sprite = sprites[i];
                 Vector2 position = positions[i];
@@ -78,7 +84,7 @@ namespace Textures
                 Vector4 uv = new(x / (float)atlasWidth, y / (float)atlasHeight, width / (float)atlasWidth, height / (float)atlasHeight);
                 uv.Y += uv.W;
                 uv.W *= -1;
-                spritesList.Add(new(sprite.Name, uv));
+                spritesList.Add(new(sprite.name, uv));
                 sprite.Dispose();
             }
         }
@@ -126,17 +132,6 @@ namespace Textures
             return sprite;
         }
 
-        public readonly AtlasSprite GetSprite(uint index)
-        {
-            ReadOnlySpan<AtlasSprite> sprites = Sprites;
-            if (index >= sprites.Length)
-            {
-                throw new IndexOutOfRangeException($"Index {index} out of range");
-            }
-
-            return sprites[(int)index];
-        }
-
         public readonly Pixel Get(uint x, uint y)
         {
             return texture.Get(x, y);
@@ -169,16 +164,11 @@ namespace Textures
 
         public readonly struct InputSprite : IDisposable
         {
+            public readonly FixedString name;
             public readonly uint width;
             public readonly uint height;
 
-            private readonly UnmanagedArray<char> name;
             private readonly UnmanagedArray<Pixel> pixels;
-
-            /// <summary>
-            /// Name of the sprite.
-            /// </summary>
-            public readonly ReadOnlySpan<char> Name => name.AsSpan();
 
             /// <summary>
             /// All pixels of this sprite.
@@ -193,20 +183,24 @@ namespace Textures
             }
 #endif
 
-            public InputSprite(ReadOnlySpan<char> name, uint width, uint height, ReadOnlySpan<byte> inputData, Channels channels)
+            /// <summary>
+            /// A sprite with preset data spread out across
+            /// the given channel mask.
+            /// </summary>
+            public InputSprite(ReadOnlySpan<char> name, uint width, uint height, Channels channels, ReadOnlySpan<byte> channelData)
             {
                 this.width = width;
                 this.height = height;
                 this.name = new(name);
-                pixels = new((uint)inputData.Length);
+                pixels = new((uint)channelData.Length);
 
                 bool red = (channels & Channels.Red) == Channels.Red;
                 bool green = (channels & Channels.Green) == Channels.Green;
                 bool blue = (channels & Channels.Blue) == Channels.Blue;
                 bool alpha = (channels & Channels.Alpha) == Channels.Alpha;
-                for (uint i = 0; i < inputData.Length; i++)
+                for (uint i = 0; i < channelData.Length; i++)
                 {
-                    byte d = inputData[(int)i];
+                    byte d = channelData[(int)i];
                     ref Pixel pixel = ref pixels.GetRef(i);
                     if (red) pixel.r = d;
                     if (green) pixel.g = d;
@@ -215,6 +209,20 @@ namespace Textures
                 }
             }
 
+            /// <summary>
+            /// A sprite with preset data.
+            /// </summary>
+            public InputSprite(ReadOnlySpan<char> name, uint width, uint height, ReadOnlySpan<Pixel> pixels)
+            {
+                this.width = width;
+                this.height = height;
+                this.name = new(name);
+                this.pixels = new(pixels);
+            }
+
+            /// <summary>
+            /// A blank sprite with default pixels.
+            /// </summary>
             public InputSprite(ReadOnlySpan<char> name, uint width, uint height)
             {
                 this.width = width;
@@ -226,12 +234,11 @@ namespace Textures
             public readonly void Dispose()
             {
                 pixels.Dispose();
-                name.Dispose();
             }
 
             public readonly override string ToString()
             {
-                return Name.ToString();
+                return name.ToString();
             }
         }
     }
