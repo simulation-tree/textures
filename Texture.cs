@@ -9,7 +9,7 @@ using Unmanaged.Collections;
 
 namespace Textures
 {
-    public readonly struct Texture : ITexture, IDisposable
+    public readonly struct Texture : IEntity, IDisposable
     {
         private readonly Entity entity;
 
@@ -69,7 +69,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, ReadOnlySpan<char> address)
         {
-            DataRequest request = new(world, address);
+            DataEntity request = new(world, address);
             entity = (Entity)request;
             entity.AddComponent(new IsTextureRequest());
         }
@@ -79,7 +79,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, FixedString address)
         {
-            DataRequest request = new(world, address);
+            DataEntity request = new(world, address);
             entity = (Entity)request;
             entity.AddComponent(new IsTextureRequest());
         }

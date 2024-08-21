@@ -9,7 +9,7 @@ using Unmanaged.Collections;
 
 namespace Textures
 {
-    public readonly struct AtlasTexture : IAtlasTexture, IDisposable
+    public readonly struct AtlasTexture : IEntity, IDisposable
     {
         private readonly Texture texture;
 
