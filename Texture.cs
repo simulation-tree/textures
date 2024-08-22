@@ -91,7 +91,27 @@ namespace Textures
 
         public readonly override string ToString()
         {
-            return entity.ToString();
+            Span<char> buffer = stackalloc char[128];
+            int length = ToString(buffer);
+            return new string(buffer[..length]);
+        }
+
+        public readonly int ToString(Span<char> buffer)
+        {
+            int length = 0;
+            Width.TryFormat(buffer, out int written);
+            length += written;
+            buffer[length++] = 'x';
+            Height.TryFormat(buffer[length..], out written);
+            length += written;
+            buffer[length++] = ' ';
+            buffer[length++] = '(';
+            buffer[length++] = '`';
+            length += entity.ToString(buffer[length..]);
+            buffer[length++] = '`';
+            buffer[length++] = ')';
+            return length;
+
         }
 
         Query IEntity.GetQuery(World world)
