@@ -10,10 +10,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\bin-packing\source\Bin Packing.csproj" />
-		<ProjectReference Include="..\data\source\Data.csproj" />
-		<ProjectReference Include="..\simulation\source\Simulation.csproj" />
-		<ProjectReference Include="..\unmanaged\source\Unmanaged.csproj" />
+		<ProjectReference Include="..\..\bin-packing\source\Bin Packing.csproj" />
+		<ProjectReference Include="..\..\data\source\Data.csproj" />
+		<ProjectReference Include="..\..\simulation\source\Simulation.csproj" />
+		<ProjectReference Include="..\..\unmanaged\source\Unmanaged.csproj" />
 	</ItemGroup>
 
 </Project>

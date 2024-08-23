@@ -34,6 +34,22 @@ namespace Textures
             }
         }
 
+        public readonly ref Pixel this[uint x, uint y]
+        {
+            get
+            {
+                ThrowIfDataNotLoadedYet();
+                UnmanagedList<Pixel> pixels = entity.GetList<Pixel>();
+                uint index = y * Width + x;
+                if (index >= pixels.Count)
+                {
+                    throw new ArgumentOutOfRangeException(null, "Position must be within the texture.");
+                }
+
+                return ref pixels[index];
+            }
+        }
+
         World IEntity.World => entity;
         eint IEntity.Value => entity;
 
@@ -69,7 +85,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, ReadOnlySpan<char> address)
         {
-            DataEntity request = new(world, address);
+            DataRequest request = new(world, address);
             entity = request;
             entity.AddComponent(new IsTextureRequest());
         }
@@ -79,7 +95,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, FixedString address)
         {
-            DataEntity request = new(world, address);
+            DataRequest request = new(world, address);
             entity = request;
             entity.AddComponent(new IsTextureRequest());
         }

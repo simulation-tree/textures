@@ -175,6 +175,9 @@ namespace Textures
             /// </summary>
             public readonly Span<Pixel> Pixels => pixels.AsSpan();
 
+            public ref Pixel this[uint index] => ref pixels.GetRef(index);
+            public ref Pixel this[uint x, uint y] => ref pixels.GetRef(x + (y * width));
+
 #if NET
             [Obsolete("Default constructor not available", true)]
             public InputSprite()
