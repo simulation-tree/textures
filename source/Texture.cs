@@ -30,7 +30,7 @@ namespace Textures
             get
             {
                 ThrowIfDataNotLoadedYet();
-                return entity.GetList<Pixel>().AsSpan();
+                return entity.GetArray<Pixel>();
             }
         }
 
@@ -39,14 +39,14 @@ namespace Textures
             get
             {
                 ThrowIfDataNotLoadedYet();
-                UnmanagedList<Pixel> pixels = entity.GetList<Pixel>();
+                Span<Pixel> pixels = entity.GetArray<Pixel>();
                 uint index = y * Width + x;
-                if (index >= pixels.Count)
+                if (index >= pixels.Length)
                 {
                     throw new ArgumentOutOfRangeException(null, "Position must be within the texture.");
                 }
 
-                return ref pixels[index];
+                return ref pixels[(int)index];
             }
         }
 
@@ -67,17 +67,15 @@ namespace Textures
             entity.AddComponent(new IsTexture(width, height));
 
             uint pixelCount = width * height;
-            UnmanagedList<Pixel> list = entity.CreateList<Pixel>(pixelCount);
-            list.AddRepeat(defaultPixel, pixelCount);
+            Span<Pixel> pixels = entity.CreateArray<Pixel>(pixelCount);
+            pixels.Fill(defaultPixel);
         }
 
         public Texture(World world, uint width, uint height, ReadOnlySpan<Pixel> pixels)
         {
             entity = new(world);
             entity.AddComponent(new IsTexture(width, height));
-
-            UnmanagedList<Pixel> list = entity.CreateList<Pixel>((uint)pixels.Length);
-            list.AddRange(pixels);
+            entity.CreateArray(pixels);
         }
 
         /// <summary>
@@ -147,32 +145,6 @@ namespace Textures
         public readonly uint GetVersion()
         {
             return entity.GetComponent<IsTexture>().version;
-        }
-
-        public readonly Pixel Get(uint x, uint y)
-        {
-            ThrowIfDataNotLoadedYet();
-            UnmanagedList<Pixel> pixels = entity.GetList<Pixel>();
-            (uint width, uint height) = Size;
-            if (x >= width || y >= height)
-            {
-                throw new ArgumentOutOfRangeException(null, "Position must be within the texture.");
-            }
-
-            return pixels[y * width + x];
-        }
-
-        public readonly void Set(uint x, uint y, Pixel pixel)
-        {
-            ThrowIfDataNotLoadedYet();
-            UnmanagedList<Pixel> pixels = entity.GetList<Pixel>();
-            (uint width, uint height) = Size;
-            if (x >= width || y >= height)
-            {
-                throw new ArgumentOutOfRangeException(null, "Position must be within the texture.");
-            }
-
-            pixels[y * width + x] = pixel;
         }
 
         public readonly Color Evaluate(Vector2 position)

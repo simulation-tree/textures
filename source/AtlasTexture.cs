@@ -13,12 +13,12 @@ namespace Textures
     {
         private readonly Texture texture;
 
-        public readonly ReadOnlySpan<AtlasSprite> Sprites => ((Entity)texture).GetList<AtlasSprite>().AsSpan();
+        public readonly ReadOnlySpan<AtlasSprite> Sprites => ((Entity)texture).GetArray<AtlasSprite>();
         public readonly (uint width, uint height) Size => texture.Size;
         public readonly uint Width => texture.Width;
         public readonly uint Height => texture.Height;
-        public readonly uint SpriteCount => ((Entity)texture).GetListLength<AtlasSprite>();
-        public readonly AtlasSprite this[uint index] => ((Entity)texture).GetListElement<AtlasSprite>(index);
+        public readonly uint SpriteCount => ((Entity)texture).GetArrayLength<AtlasSprite>();
+        public readonly AtlasSprite this[uint index] => ((Entity)texture).GetArrayElement<AtlasSprite>(index);
 
         World IEntity.World => (Entity)texture;
         eint IEntity.Value => (Entity)texture;
@@ -60,7 +60,7 @@ namespace Textures
             uint atlasWidth = (uint)maxSize.X;
             uint atlasHeight = (uint)maxSize.Y;
             texture = new(world, atlasWidth, atlasHeight);
-            UnmanagedList<AtlasSprite> spritesList = ((Entity)texture).CreateList<AtlasSprite>(spriteCount);
+            Span<AtlasSprite> spritesList = ((Entity)texture).CreateArray<AtlasSprite>(spriteCount);
             Span<Pixel> pixels = texture.Pixels;
             for (int i = 0; i < spriteCount; i++)
             {
@@ -84,7 +84,7 @@ namespace Textures
                 Vector4 uv = new(x / (float)atlasWidth, y / (float)atlasHeight, width / (float)atlasWidth, height / (float)atlasHeight);
                 uv.Y += uv.W;
                 uv.W *= -1;
-                spritesList.Add(new(sprite.name, uv));
+                spritesList[i] = new(sprite.name, uv);
                 sprite.Dispose();
             }
         }
@@ -130,16 +130,6 @@ namespace Textures
             }
 
             return sprite;
-        }
-
-        public readonly Pixel Get(uint x, uint y)
-        {
-            return texture.Get(x, y);
-        }
-
-        public readonly void Set(uint x, uint y, Pixel pixel)
-        {
-            texture.Set(x, y, pixel);
         }
 
         public readonly Color Evaluate(Vector2 position)
