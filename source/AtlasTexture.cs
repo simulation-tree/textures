@@ -9,7 +9,7 @@ using Unmanaged.Collections;
 
 namespace Textures
 {
-    public readonly struct AtlasTexture : IEntity, IDisposable
+    public readonly struct AtlasTexture : IEntity
     {
         private readonly Texture texture;
 
@@ -87,11 +87,6 @@ namespace Textures
                 spritesList[i] = new(sprite.name, uv);
                 sprite.Dispose();
             }
-        }
-
-        public readonly void Dispose()
-        {
-            texture.Dispose();
         }
 
         public readonly override string ToString()

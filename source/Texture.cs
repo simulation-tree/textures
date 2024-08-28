@@ -5,11 +5,10 @@ using System.Diagnostics;
 using System.Numerics;
 using Textures.Components;
 using Unmanaged;
-using Unmanaged.Collections;
 
 namespace Textures
 {
-    public readonly struct Texture : IEntity, IDisposable
+    public readonly struct Texture : IEntity
     {
         private readonly Entity entity;
 
@@ -96,11 +95,6 @@ namespace Textures
             DataRequest request = new(world, address);
             entity = request;
             entity.AddComponent(new IsTextureRequest());
-        }
-
-        public readonly void Dispose()
-        {
-            entity.Dispose();
         }
 
         public readonly override string ToString()
