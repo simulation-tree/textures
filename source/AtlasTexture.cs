@@ -1,4 +1,4 @@
-﻿using BinPacking;
+﻿using BinPacker;
 using Data;
 using Simulation;
 using System;
