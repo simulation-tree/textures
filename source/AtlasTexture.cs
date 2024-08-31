@@ -21,7 +21,7 @@ namespace Textures
         public readonly AtlasSprite this[uint index] => ((Entity)texture).GetArrayElement<AtlasSprite>(index);
 
         World IEntity.World => (Entity)texture;
-        eint IEntity.Value => (Entity)texture;
+        uint IEntity.Value => (Entity)texture;
 
 #if NET
         [Obsolete("Default constructor not available.", true)]
@@ -31,7 +31,7 @@ namespace Textures
         }
 #endif
 
-        public AtlasTexture(World world, eint existingEntity)
+        public AtlasTexture(World world, uint existingEntity)
         {
             texture = new(world, existingEntity);
         }

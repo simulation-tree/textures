@@ -50,9 +50,9 @@ namespace Textures
         }
 
         World IEntity.World => entity;
-        eint IEntity.Value => entity;
+        uint IEntity.Value => entity;
 
-        public Texture(World world, eint existingEntity)
+        public Texture(World world, uint existingEntity)
         {
             entity = new(world, existingEntity);
         }
