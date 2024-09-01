@@ -18,7 +18,7 @@ namespace Textures
         public readonly uint Width => texture.Width;
         public readonly uint Height => texture.Height;
         public readonly uint SpriteCount => ((Entity)texture).GetArrayLength<AtlasSprite>();
-        public readonly AtlasSprite this[uint index] => ((Entity)texture).GetArrayElement<AtlasSprite>(index);
+        public readonly AtlasSprite this[uint index] => ((Entity)texture).GetArrayElementRef<AtlasSprite>(index);
 
         World IEntity.World => (Entity)texture;
         uint IEntity.Value => (Entity)texture;
