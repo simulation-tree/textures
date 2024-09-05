@@ -10,7 +10,7 @@ namespace Textures
 {
     public readonly struct Texture : IEntity
     {
-        private readonly Entity entity;
+        public readonly Entity entity;
 
         public readonly (uint width, uint height) Size
         {
@@ -24,7 +24,7 @@ namespace Textures
 
         public readonly uint Width => Size.width;
         public readonly uint Height => Size.height;
-        public readonly Span<Pixel> Pixels
+        public readonly USpan<Pixel> Pixels
         {
             get
             {
@@ -38,19 +38,20 @@ namespace Textures
             get
             {
                 ThrowIfDataNotLoadedYet();
-                Span<Pixel> pixels = entity.GetArray<Pixel>();
+                USpan<Pixel> pixels = entity.GetArray<Pixel>();
                 uint index = y * Width + x;
-                if (index >= pixels.Length)
+                if (index >= pixels.length)
                 {
                     throw new ArgumentOutOfRangeException(null, "Position must be within the texture.");
                 }
 
-                return ref pixels[(int)index];
+                return ref pixels[index];
             }
         }
 
-        World IEntity.World => entity;
-        uint IEntity.Value => entity;
+        readonly uint IEntity.Value => entity.value;
+        readonly World IEntity.World => entity.world;
+        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsTexture>()], [RuntimeType.Get<Pixel>()]);
 
         public Texture(World world, uint existingEntity)
         {
@@ -66,11 +67,11 @@ namespace Textures
             entity.AddComponent(new IsTexture(width, height));
 
             uint pixelCount = width * height;
-            Span<Pixel> pixels = entity.CreateArray<Pixel>(pixelCount);
+            USpan<Pixel> pixels = entity.CreateArray<Pixel>(pixelCount);
             pixels.Fill(defaultPixel);
         }
 
-        public Texture(World world, uint width, uint height, ReadOnlySpan<Pixel> pixels)
+        public Texture(World world, uint width, uint height, USpan<Pixel> pixels)
         {
             entity = new(world);
             entity.AddComponent(new IsTexture(width, height));
@@ -80,10 +81,18 @@ namespace Textures
         /// <summary>
         /// Creates a texture+request that loads from the given address.
         /// </summary>
-        public Texture(World world, ReadOnlySpan<char> address)
+        public Texture(World world, USpan<char> address)
         {
-            DataRequest request = new(world, address);
-            entity = request;
+            entity = new DataRequest(world, address).entity;
+            entity.AddComponent(new IsTextureRequest());
+        }
+
+        /// <summary>
+        /// Creates a texture+request that loads from the given address.
+        /// </summary>
+        public Texture(World world, string address)
+        {
+            entity = new DataRequest(world, address).entity;
             entity.AddComponent(new IsTextureRequest());
         }
 
@@ -92,39 +101,30 @@ namespace Textures
         /// </summary>
         public Texture(World world, FixedString address)
         {
-            DataRequest request = new(world, address);
-            entity = request;
+            entity = new DataRequest(world, address).entity;
             entity.AddComponent(new IsTextureRequest());
         }
 
-        public readonly override string ToString()
+        public unsafe readonly override string ToString()
         {
-            Span<char> buffer = stackalloc char[128];
-            int length = ToString(buffer);
-            return new string(buffer[..length]);
+            USpan<char> buffer = stackalloc char[128];
+            uint length = ToString(buffer);
+            return new string(buffer.pointer, 0, (int)length);
         }
 
-        public readonly int ToString(Span<char> buffer)
+        public readonly uint ToString(USpan<char> buffer)
         {
-            int length = 0;
-            Width.TryFormat(buffer, out int written);
-            length += written;
+            uint length = 0;
+            length += Width.ToString(buffer.Slice(length));
             buffer[length++] = 'x';
-            Height.TryFormat(buffer[length..], out written);
-            length += written;
+            length += Height.ToString(buffer.Slice(length));
             buffer[length++] = ' ';
             buffer[length++] = '(';
             buffer[length++] = '`';
-            length += entity.ToString(buffer[length..]);
+            length += entity.ToString(buffer.Slice(length));
             buffer[length++] = '`';
             buffer[length++] = ')';
             return length;
-
-        }
-
-        Query IEntity.GetQuery(World world)
-        {
-            return new(world, RuntimeType.Get<IsTexture>());
         }
 
         [Conditional("DEBUG")]
@@ -150,15 +150,15 @@ namespace Textures
             }
 
             (uint width, uint height) size = Size;
-            int width = (int)size.width;
-            int height = (int)size.height;
-            Span<Pixel> pixels = Pixels;
-            int maxWidth = width - 1;
-            int maxHeight = height - 1;
-            int x = (int)(position.X * maxWidth);
-            int y = (int)(position.Y * maxHeight);
-            int xx = Math.Min(x + 1, maxWidth);
-            int yy = Math.Min(y + 1, maxHeight);
+            uint width = size.width;
+            uint height = size.height;
+            USpan<Pixel> pixels = Pixels;
+            uint maxWidth = width - 1;
+            uint maxHeight = height - 1;
+            uint x = (uint)(position.X * maxWidth);
+            uint y = (uint)(position.Y * maxHeight);
+            uint xx = Math.Min(x + 1, maxWidth);
+            uint yy = Math.Min(y + 1, maxHeight);
             Vector4 topLeft = pixels[y * width + x].AsVector4();
             Vector4 topRight = pixels[y * width + xx].AsVector4();
             Vector4 bottomLeft = pixels[yy * width + x].AsVector4();
@@ -173,11 +173,6 @@ namespace Textures
         public readonly Color Evaluate(float x, float y)
         {
             return Evaluate(new Vector2(x, y));
-        }
-
-        public static implicit operator Entity(Texture texture)
-        {
-            return texture.entity;
         }
     }
 }

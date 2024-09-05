@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using Unmanaged;
 
 namespace Textures
 {
@@ -26,17 +27,23 @@ namespace Textures
             a = (byte)(value & 0xFF);
         }
 
-        public readonly override string ToString()
+        public unsafe readonly override string ToString()
         {
-            Span<char> buffer = stackalloc char[256];
-            r.TryFormat(buffer, out int length);
+            USpan<char> buffer = stackalloc char[256];
+            uint length = ToString(buffer);
+            return new string(buffer.pointer, 0, (int)length);
+        }
+
+        public readonly uint ToString(USpan<char> buffer)
+        {
+            uint length = r.ToString(buffer);
             buffer[length++] = ',';
-            g.TryFormat(buffer[length..], out length);
+            length += g.ToString(buffer.Slice(length));
             buffer[length++] = ',';
-            b.TryFormat(buffer[length..], out length);
+            length += b.ToString(buffer.Slice(length));
             buffer[length++] = ',';
-            a.TryFormat(buffer[length..], out length);
-            return new string(buffer[..length]);
+            length += a.ToString(buffer.Slice(length));
+            return length;
         }
 
         public readonly Vector4 AsVector4()

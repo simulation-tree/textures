@@ -1,5 +1,4 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 using Unmanaged;
 
 namespace Textures
@@ -17,9 +16,9 @@ namespace Textures
         /// </summary>
         public Vector4 region;
 
-        public AtlasSprite(ReadOnlySpan<char> name, Vector4 region)
+        public AtlasSprite(USpan<char> name, Vector4 region)
         {
-            this.name = name;
+            this.name = new(name);
             this.region = region;
         }
 
@@ -29,25 +28,25 @@ namespace Textures
             this.region = region;
         }
 
-        public readonly override string ToString()
+        public unsafe readonly override string ToString()
         {
-            Span<char> buffer = stackalloc char[128];
-            int length = ToString(buffer);
-            return new string(buffer[..length]);
+            USpan<char> buffer = stackalloc char[128];
+            uint length = ToString(buffer);
+            return new string(buffer.pointer, 0, (int)length);
         }
 
-        public readonly int ToString(Span<char> buffer)
+        public readonly uint ToString(USpan<char> buffer)
         {
-            int length = name.ToString(buffer);
+            uint length = name.CopyTo(buffer);
             buffer[length++] = ' ';
             buffer[length++] = '[';
-            region.X.TryFormat(buffer[length..], out length);
+            length += region.X.ToString(buffer.Slice(length));
             buffer[length++] = ',';
-            region.Y.TryFormat(buffer[length..], out length);
+            length += region.Y.ToString(buffer.Slice(length));
             buffer[length++] = ',';
-            region.Z.TryFormat(buffer[length..], out length);
+            length += region.Z.ToString(buffer.Slice(length));
             buffer[length++] = ',';
-            region.W.TryFormat(buffer[length..], out length);
+            length += region.W.ToString(buffer.Slice(length));
             buffer[length++] = ']';
             return length;
         }
