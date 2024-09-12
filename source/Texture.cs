@@ -51,7 +51,7 @@ namespace Textures
 
         readonly uint IEntity.Value => entity.value;
         readonly World IEntity.World => entity.world;
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsTexture>()], [RuntimeType.Get<Pixel>()]);
+        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsTexture>().AddArrayType<Pixel>();
 
         public Texture(World world, uint existingEntity)
         {
