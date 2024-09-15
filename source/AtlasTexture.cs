@@ -2,6 +2,7 @@
 using Data;
 using Simulation;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Textures.Components;
 using Unmanaged;
@@ -19,6 +20,7 @@ namespace Textures
         public readonly uint Height => texture.Height;
         public readonly uint SpriteCount => texture.entity.GetArrayLength<AtlasSprite>();
         public readonly AtlasSprite this[uint index] => texture.entity.GetArrayElementRef<AtlasSprite>(index);
+        public readonly AtlasSprite this[FixedString name] => GetSprite(name);
 
         readonly uint IEntity.Value => texture.entity.value;
         readonly World IEntity.World => texture.entity.world;
@@ -82,10 +84,14 @@ namespace Textures
                     pixels[index] = spritePixel;
                 }
 
-                Vector4 uv = new(x / (float)atlasWidth, y / (float)atlasHeight, width / (float)atlasWidth, height / (float)atlasHeight);
-                uv.Y += uv.W;
-                uv.W *= -1;
-                spritesList[i] = new(sprite.name, uv);
+                Vector4 region = default;
+                region.X = x / (float)atlasWidth;
+                region.Y = y / (float)atlasHeight;
+                region.Z = region.X + width / (float)atlasWidth;
+                region.W = region.Y + height / (float)atlasHeight;
+                //uv.Y += uv.W;
+                //uv.W *= -1;
+                spritesList[i] = new(sprite.name, region);
                 sprite.Dispose();
             }
         }
@@ -116,23 +122,31 @@ namespace Textures
             return false;
         }
 
-        public readonly AtlasSprite GetSprite(USpan<char> name)
+        public readonly bool ContainsSprite(FixedString name)
         {
-            if (!TryGetSprite(name, out AtlasSprite sprite))
+            USpan<AtlasSprite> sprites = Sprites;
+            for (uint i = 0; i < sprites.Length; i++)
             {
-                throw new InvalidOperationException($"Sprite named `{name.ToString()}` not found in atlas texture `{texture}`");
+                if (sprites[i].name.Equals(name))
+                {
+                    return true;
+                }
             }
 
+            return false;
+        }
+
+        public readonly AtlasSprite GetSprite(USpan<char> name)
+        {
+            ThrowIfSpriteIsMissing(new FixedString(name));
+            TryGetSprite(name, out AtlasSprite sprite);
             return sprite;
         }
 
         public readonly AtlasSprite GetSprite(FixedString name)
         {
-            if (!TryGetSprite(name, out AtlasSprite sprite))
-            {
-                throw new InvalidOperationException($"Sprite named `{name.ToString()}` not found in atlas texture `{texture}`");
-            }
-
+            ThrowIfSpriteIsMissing(name);
+            TryGetSprite(name, out AtlasSprite sprite);
             return sprite;
         }
 
@@ -144,6 +158,25 @@ namespace Textures
         public readonly Color Evaluate(float x, float y)
         {
             return texture.Evaluate(x, y);
+        }
+
+        [Conditional("DEBUG")]
+        private readonly void ThrowIfSpriteIsMissing(FixedString name)
+        {
+            if (!ContainsSprite(name))
+            {
+                throw new InvalidOperationException($"Sprite named `{name}` not found in atlas texture `{texture}`");
+            }
+        }
+
+        public static implicit operator Texture(AtlasTexture atlasTexture)
+        {
+            return atlasTexture.texture;
+        }
+
+        public static implicit operator Entity(AtlasTexture atlasTexture)
+        {
+            return atlasTexture.AsEntity();
         }
 
         public readonly struct InputSprite : IDisposable
