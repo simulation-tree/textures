@@ -44,7 +44,7 @@ namespace Textures
         public AtlasTexture(World world, USpan<InputSprite> sprites, uint padding = 0)
         {
             //find the max sprite size
-            uint spriteCount = sprites.length;
+            uint spriteCount = sprites.Length;
             using UnmanagedArray<Vector2> sizes = new(spriteCount);
             Vector2 maxSpriteSize = default;
             for (uint i = 0; i < spriteCount; i++)
@@ -73,7 +73,7 @@ namespace Textures
                 uint width = (uint)size.X;
                 uint height = (uint)size.Y;
                 USpan<Pixel> spritePixels = sprite.Pixels;
-                for (uint p = 0; p < spritePixels.length; p++)
+                for (uint p = 0; p < spritePixels.Length; p++)
                 {
                     Pixel spritePixel = spritePixels[p];
                     uint px = p % width;
@@ -103,7 +103,7 @@ namespace Textures
         public readonly bool TryGetSprite(FixedString name, out AtlasSprite sprite)
         {
             USpan<AtlasSprite> sprites = Sprites;
-            for (uint i = 0; i < sprites.length; i++)
+            for (uint i = 0; i < sprites.Length; i++)
             {
                 if (sprites[i].name.Equals(name))
                 {
@@ -188,13 +188,13 @@ namespace Textures
                 this.width = width;
                 this.height = height;
                 this.name = name;
-                pixels = new(channelData.length);
+                pixels = new(channelData.Length);
 
                 bool red = (channels & Channels.Red) == Channels.Red;
                 bool green = (channels & Channels.Green) == Channels.Green;
                 bool blue = (channels & Channels.Blue) == Channels.Blue;
                 bool alpha = (channels & Channels.Alpha) == Channels.Alpha;
-                for (uint i = 0; i < channelData.length; i++)
+                for (uint i = 0; i < channelData.Length; i++)
                 {
                     byte d = channelData[i];
                     ref Pixel pixel = ref pixels[i];

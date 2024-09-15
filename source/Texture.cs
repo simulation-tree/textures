@@ -40,7 +40,7 @@ namespace Textures
                 ThrowIfDataNotLoadedYet();
                 USpan<Pixel> pixels = entity.GetArray<Pixel>();
                 uint index = y * Width + x;
-                if (index >= pixels.length)
+                if (index >= pixels.Length)
                 {
                     throw new ArgumentOutOfRangeException(null, "Position must be within the texture.");
                 }
