@@ -89,8 +89,11 @@ namespace Textures
                 region.Y = y / (float)atlasHeight;
                 region.Z = region.X + width / (float)atlasWidth;
                 region.W = region.Y + height / (float)atlasHeight;
-                //uv.Y += uv.W;
-                //uv.W *= -1;
+
+                //flip y
+                //region.Y += region.W;
+                //region.W *= -1;
+
                 spritesList[i] = new(sprite.name, region);
                 sprite.Dispose();
             }
