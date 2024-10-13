@@ -30,7 +30,7 @@ namespace Textures
         {
             USpan<char> buffer = stackalloc char[256];
             uint length = ToString(buffer);
-            return new string(buffer.pointer, 0, (int)length);
+            return buffer.Slice(0, length).ToString();
         }
 
         public readonly uint ToString(USpan<char> buffer)
