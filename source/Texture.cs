@@ -105,6 +105,11 @@ namespace Textures
             entity.AddComponent(new IsTextureRequest());
         }
 
+        public readonly void Dispose()
+        {
+            entity.Dispose();
+        }
+
         public unsafe readonly override string ToString()
         {
             USpan<char> buffer = stackalloc char[128];

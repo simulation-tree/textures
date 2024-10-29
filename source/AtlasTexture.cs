@@ -99,9 +99,21 @@ namespace Textures
             }
         }
 
+        public readonly void Dispose()
+        {
+            texture.Dispose();
+        }
+
         public readonly override string ToString()
         {
-            return texture.ToString();
+            USpan<char> buffer = stackalloc char[64];
+            uint length = ToString(buffer);
+            return buffer.Slice(0, length).ToString();
+        }
+
+        public readonly uint ToString(USpan<char> buffer)
+        {
+            return texture.ToString(buffer);
         }
 
         public readonly bool TryGetSprite(USpan<char> name, out AtlasSprite sprite)
