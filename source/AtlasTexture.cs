@@ -1,4 +1,5 @@
 ﻿using BinPacker;
+using Collections;
 using Data;
 using Simulation;
 using System;
@@ -6,7 +7,6 @@ using System.Diagnostics;
 using System.Numerics;
 using Textures.Components;
 using Unmanaged;
-using Unmanaged.Collections;
 
 namespace Textures
 {
@@ -47,7 +47,7 @@ namespace Textures
         {
             //find the max sprite size
             uint spriteCount = sprites.Length;
-            using UnmanagedArray<Vector2> sizes = new(spriteCount);
+            using Array<Vector2> sizes = new(spriteCount);
             Vector2 maxSpriteSize = default;
             for (uint i = 0; i < spriteCount; i++)
             {
@@ -200,7 +200,7 @@ namespace Textures
             public readonly uint width;
             public readonly uint height;
 
-            private readonly UnmanagedArray<Pixel> pixels;
+            private readonly Array<Pixel> pixels;
 
             /// <summary>
             /// All pixels of this sprite.
