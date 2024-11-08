@@ -8,7 +8,7 @@ using Unmanaged;
 
 namespace Textures
 {
-    public readonly struct Texture : IEntity
+    public readonly struct Texture : IEntity, IEquatable<Texture>
     {
         public readonly Entity entity;
 
@@ -178,6 +178,36 @@ namespace Textures
         public readonly Color Evaluate(float x, float y)
         {
             return Evaluate(new Vector2(x, y));
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is Texture texture && Equals(texture);
+        }
+
+        public readonly bool Equals(Texture other)
+        {
+            return entity.Equals(other.entity);
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return entity.GetHashCode();
+        }
+
+        public static implicit operator Entity(Texture texture)
+        {
+            return texture.entity;
+        }
+
+        public static bool operator ==(Texture left, Texture right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Texture left, Texture right)
+        {
+            return !(left == right);
         }
     }
 }
