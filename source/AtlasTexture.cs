@@ -1,29 +1,29 @@
 ﻿using BinPacker;
 using Collections;
 using Data;
-using Simulation;
 using System;
 using System.Diagnostics;
 using System.Numerics;
 using Textures.Components;
 using Unmanaged;
+using Worlds;
 
 namespace Textures
 {
     public readonly struct AtlasTexture : IEntity
     {
-        public readonly Texture texture;
+        private readonly Texture texture;
 
-        public readonly USpan<AtlasSprite> Sprites => texture.entity.GetArray<AtlasSprite>();
+        public readonly USpan<AtlasSprite> Sprites => texture.AsEntity().GetArray<AtlasSprite>();
         public readonly (uint width, uint height) Size => texture.Size;
         public readonly uint Width => texture.Width;
         public readonly uint Height => texture.Height;
-        public readonly uint SpriteCount => texture.entity.GetArrayLength<AtlasSprite>();
-        public readonly AtlasSprite this[uint index] => texture.entity.GetArrayElementRef<AtlasSprite>(index);
+        public readonly uint SpriteCount => texture.AsEntity().GetArrayLength<AtlasSprite>();
+        public readonly AtlasSprite this[uint index] => texture.AsEntity().GetArrayElementRef<AtlasSprite>(index);
         public readonly AtlasSprite this[FixedString name] => GetSprite(name);
 
-        readonly uint IEntity.Value => texture.entity.value;
-        readonly World IEntity.World => texture.entity.world;
+        readonly uint IEntity.Value => texture.GetEntityValue();
+        readonly World IEntity.World => texture.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentType<IsTexture>().AddArrayTypes<Pixel, AtlasSprite>();
 
 #if NET
@@ -63,7 +63,7 @@ namespace Textures
             uint atlasWidth = (uint)maxSize.X;
             uint atlasHeight = (uint)maxSize.Y;
             texture = new(world, atlasWidth, atlasHeight);
-            USpan<AtlasSprite> spritesList = texture.entity.CreateArray<AtlasSprite>(spriteCount);
+            USpan<AtlasSprite> spritesList = texture.AsEntity().CreateArray<AtlasSprite>(spriteCount);
             USpan<Pixel> pixels = texture.Pixels;
             for (uint i = 0; i < spriteCount; i++)
             {

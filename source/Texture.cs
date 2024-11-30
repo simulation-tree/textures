@@ -1,16 +1,16 @@
 ﻿using Data;
-using Simulation;
 using System;
 using System.Diagnostics;
 using System.Numerics;
 using Textures.Components;
 using Unmanaged;
+using Worlds;
 
 namespace Textures
 {
     public readonly struct Texture : IEntity, IEquatable<Texture>
     {
-        public readonly Entity entity;
+        private readonly Entity entity;
 
         public readonly (uint width, uint height) Size
         {
@@ -83,7 +83,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, USpan<char> address)
         {
-            entity = new DataRequest(world, address).entity;
+            entity = new DataRequest(world, address).AsEntity();
             entity.AddComponent(new IsTextureRequest());
         }
 
@@ -92,7 +92,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, string address)
         {
-            entity = new DataRequest(world, address).entity;
+            entity = new DataRequest(world, address).AsEntity();
             entity.AddComponent(new IsTextureRequest());
         }
 
@@ -101,7 +101,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, FixedString address)
         {
-            entity = new DataRequest(world, address).entity;
+            entity = new DataRequest(world, address).AsEntity();
             entity.AddComponent(new IsTextureRequest());
         }
 
