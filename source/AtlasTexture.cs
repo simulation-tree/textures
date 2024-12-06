@@ -19,7 +19,7 @@ namespace Textures
         public readonly uint Width => texture.Width;
         public readonly uint Height => texture.Height;
         public readonly uint SpriteCount => texture.AsEntity().GetArrayLength<AtlasSprite>();
-        public readonly AtlasSprite this[uint index] => texture.AsEntity().GetArrayElementRef<AtlasSprite>(index);
+        public readonly AtlasSprite this[uint index] => texture.AsEntity().GetArrayElement<AtlasSprite>(index);
         public readonly AtlasSprite this[FixedString name] => GetSprite(name);
 
         readonly uint IEntity.Value => texture.GetEntityValue();
@@ -222,8 +222,8 @@ namespace Textures
             /// A sprite with preset data spread out across
             /// the given channel mask.
             /// </summary>
-            public InputSprite(USpan<char> name, uint width, uint height, Channels channels, USpan<byte> channelData)
-                : this(new FixedString(name), width, height, channels, channelData)
+            public InputSprite(USpan<char> name, uint width, uint height, USpan<byte> channelData, Channels channels)
+                : this(new FixedString(name), width, height, channelData, channels)
             {
             }
 
@@ -231,7 +231,7 @@ namespace Textures
             /// A sprite with preset data spread out across
             /// the given channel mask.
             /// </summary>
-            public InputSprite(FixedString name, uint width, uint height, Channels channels, USpan<byte> channelData)
+            public InputSprite(FixedString name, uint width, uint height, USpan<byte> channelData, Channels channels)
             {
                 this.width = width;
                 this.height = height;
@@ -251,6 +251,14 @@ namespace Textures
                     if (blue) pixel.b = d;
                     if (alpha) pixel.a = d;
                 }
+            }
+
+            public InputSprite(FixedString name, Texture texture)
+            {
+                this.width = texture.Width;
+                this.height = texture.Height;
+                this.name = name;
+                pixels = new(texture.Pixels);
             }
 
             /// <summary>

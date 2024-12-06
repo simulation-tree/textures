@@ -17,7 +17,7 @@ namespace Textures
             get
             {
                 ThrowIfDataNotLoadedYet();
-                IsTexture component = entity.GetComponentRef<IsTexture>();
+                IsTexture component = entity.GetComponent<IsTexture>();
                 return (component.width, component.height);
             }
         }
@@ -143,7 +143,7 @@ namespace Textures
 
         public readonly uint GetVersion()
         {
-            return entity.GetComponentRef<IsTexture>().version;
+            return entity.GetComponent<IsTexture>().version;
         }
 
         public readonly Color Evaluate(Vector2 position)
