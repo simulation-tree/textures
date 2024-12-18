@@ -47,7 +47,7 @@ namespace Textures
         {
             //find the max sprite size
             uint spriteCount = sprites.Length;
-            using Array<Vector2> sizes = new(spriteCount);
+            USpan<Vector2> sizes = stackalloc Vector2[(int)spriteCount];
             Vector2 maxSpriteSize = default;
             for (uint i = 0; i < spriteCount; i++)
             {
@@ -59,7 +59,7 @@ namespace Textures
 
             RecursivePacker packer = new();
             USpan<Vector2> positions = stackalloc Vector2[(int)spriteCount];
-            Vector2 maxSize = packer.Pack(sizes.AsSpan(), positions, padding);
+            Vector2 maxSize = packer.Pack(sizes, positions, padding);
             uint atlasWidth = (uint)maxSize.X;
             uint atlasHeight = (uint)maxSize.Y;
             texture = new(world, atlasWidth, atlasHeight);

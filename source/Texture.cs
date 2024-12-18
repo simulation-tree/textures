@@ -1,4 +1,5 @@
 ﻿using Data;
+using Data.Components;
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -63,8 +64,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, uint width, uint height, Pixel defaultPixel = default)
         {
-            entity = new(world);
-            entity.AddComponent(new IsTexture(width, height));
+            entity = new Entity<IsTexture>(world, new IsTexture(width, height));
 
             uint pixelCount = width * height;
             USpan<Pixel> pixels = entity.CreateArray<Pixel>(pixelCount);
@@ -73,8 +73,7 @@ namespace Textures
 
         public Texture(World world, uint width, uint height, USpan<Pixel> pixels)
         {
-            entity = new(world);
-            entity.AddComponent(new IsTexture(width, height));
+            entity = new Entity<IsTexture>(world, new IsTexture(width, height));
             entity.CreateArray(pixels);
         }
 
@@ -83,8 +82,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, USpan<char> address)
         {
-            entity = new DataRequest(world, address).AsEntity();
-            entity.AddComponent(new IsTextureRequest());
+            entity = new Entity<IsDataRequest, IsTextureRequest>(world, new IsDataRequest(address), new IsTextureRequest());
         }
 
         /// <summary>
@@ -92,8 +90,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, string address)
         {
-            entity = new DataRequest(world, address).AsEntity();
-            entity.AddComponent(new IsTextureRequest());
+            entity = new Entity<IsDataRequest, IsTextureRequest>(world, new IsDataRequest(address), new IsTextureRequest());
         }
 
         /// <summary>
@@ -101,8 +98,7 @@ namespace Textures
         /// </summary>
         public Texture(World world, FixedString address)
         {
-            entity = new DataRequest(world, address).AsEntity();
-            entity.AddComponent(new IsTextureRequest());
+            entity = new Entity<IsDataRequest, IsTextureRequest>(world, new IsDataRequest(address), new IsTextureRequest());
         }
 
         public readonly void Dispose()
