@@ -24,7 +24,11 @@ namespace Textures
 
         readonly uint IEntity.Value => texture.GetEntityValue();
         readonly World IEntity.World => texture.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsTexture>().AddArrayTypes<Pixel, AtlasSprite>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentType<IsTexture>(schema).AddArrayTypes<Pixel, AtlasSprite>(schema);
+        }
 
 #if NET
         [Obsolete("Default constructor not available.", true)]
