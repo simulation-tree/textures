@@ -55,7 +55,7 @@ namespace Textures
 
         readonly Definition IEntity.GetDefinition(Schema schema)
         {
-            return new Definition().AddComponentType<IsTexture>(schema).AddArrayType<Pixel>(schema);
+            return new Definition().AddComponentType<IsTexture>(schema).AddArrayElementType<Pixel>(schema);
         }
 
         public Texture(World world, uint existingEntity)

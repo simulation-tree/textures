@@ -4,7 +4,7 @@ using Worlds;
 
 namespace Textures
 {
-    [Array]
+    [ArrayElement]
     public struct Pixel
     {
         public byte r;

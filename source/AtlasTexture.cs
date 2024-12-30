@@ -27,7 +27,7 @@ namespace Textures
 
         readonly Definition IEntity.GetDefinition(Schema schema)
         {
-            return new Definition().AddComponentType<IsTexture>(schema).AddArrayTypes<Pixel, AtlasSprite>(schema);
+            return new Definition().AddComponentType<IsTexture>(schema).AddArrayElementTypes<Pixel, AtlasSprite>(schema);
         }
 
 #if NET
