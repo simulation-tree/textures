@@ -146,7 +146,7 @@ namespace Textures
             return entity.GetComponent<IsTexture>().version;
         }
 
-        public readonly Color Evaluate(Vector2 position)
+        public readonly Vector4 Evaluate(Vector2 position)
         {
             ThrowIfDataNotLoadedYet();
             if (position.X < 0 || position.X > 1 || position.Y < 0 || position.Y > 1)
@@ -172,10 +172,10 @@ namespace Textures
             float yFactor = position.Y * maxHeight - y;
             Vector4 top = Vector4.Lerp(topLeft, topRight, xFactor);
             Vector4 bottom = Vector4.Lerp(bottomLeft, bottomRight, xFactor);
-            return new(Vector4.Lerp(top, bottom, yFactor));
+            return Vector4.Lerp(top, bottom, yFactor);
         }
 
-        public readonly Color Evaluate(float x, float y)
+        public readonly Vector4 Evaluate(float x, float y)
         {
             return Evaluate(new Vector2(x, y));
         }

@@ -169,12 +169,12 @@ namespace Textures
             return sprite;
         }
 
-        public readonly Color Evaluate(Vector2 position)
+        public readonly Vector4 Evaluate(Vector2 position)
         {
             return texture.Evaluate(position);
         }
 
-        public readonly Color Evaluate(float x, float y)
+        public readonly Vector4 Evaluate(float x, float y)
         {
             return texture.Evaluate(x, y);
         }
