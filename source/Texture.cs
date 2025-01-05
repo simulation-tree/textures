@@ -84,23 +84,7 @@ namespace Textures
         /// <summary>
         /// Creates a texture+request that loads from the given address.
         /// </summary>
-        public Texture(World world, USpan<char> address)
-        {
-            entity = new Entity<IsDataRequest, IsTextureRequest>(world, new IsDataRequest(address), new IsTextureRequest());
-        }
-
-        /// <summary>
-        /// Creates a texture+request that loads from the given address.
-        /// </summary>
-        public Texture(World world, string address)
-        {
-            entity = new Entity<IsDataRequest, IsTextureRequest>(world, new IsDataRequest(address), new IsTextureRequest());
-        }
-
-        /// <summary>
-        /// Creates a texture+request that loads from the given address.
-        /// </summary>
-        public Texture(World world, FixedString address)
+        public Texture(World world, Address address)
         {
             entity = new Entity<IsDataRequest, IsTextureRequest>(world, new IsDataRequest(address), new IsTextureRequest());
         }
