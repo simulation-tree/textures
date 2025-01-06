@@ -1,6 +1,5 @@
 ﻿using BinPacker;
 using Collections;
-using Data;
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -25,9 +24,11 @@ namespace Textures
         readonly uint IEntity.Value => texture.GetEntityValue();
         readonly World IEntity.World => texture.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentType<IsTexture>(schema).AddArrayElementTypes<Pixel, AtlasSprite>(schema);
+            archetype.AddComponentType<IsTexture>();
+            archetype.AddArrayElementType<Pixel>();
+            archetype.AddArrayElementType<AtlasSprite>();
         }
 
 #if NET

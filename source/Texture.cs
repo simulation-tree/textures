@@ -53,9 +53,10 @@ namespace Textures
         readonly uint IEntity.Value => entity.value;
         readonly World IEntity.World => entity.world;
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentType<IsTexture>(schema).AddArrayElementType<Pixel>(schema);
+            archetype.AddComponentType<IsTexture>();
+            archetype.AddArrayElementType<Pixel>();
         }
 
         public Texture(World world, uint existingEntity)
