@@ -9,7 +9,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\bin-packer\source\BinPacker.csproj" />
-		<ProjectReference Include="..\..\data\source\Data.csproj" />
+		<ProjectReference Include="..\..\data\core\Data.Core.csproj" />
 		<ProjectReference Include="..\..\unmanaged\source\Unmanaged.csproj" />
 	</ItemGroup>
 
