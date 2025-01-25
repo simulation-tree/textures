@@ -5,6 +5,13 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Title>Textures</Title>
+		<Authors>popcron</Authors>
+		<Company>game-simulations</Company>
+		<RepositoryUrl>https://github.com/game-simulations/textures</RepositoryUrl>
+		<IsAotCompatible>True</IsAotCompatible>
+		<IsTrimmable>True</IsTrimmable>
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>
