@@ -9,7 +9,7 @@ using Worlds;
 
 namespace Textures
 {
-    public readonly partial struct AtlasTexture : ITexture
+    public readonly partial struct AtlasTexture : IEntity
     {
         public readonly USpan<Pixel> Pixels => GetArray<Pixel>();
         public readonly (uint width, uint height) Dimensions => As<Texture>().Dimensions;

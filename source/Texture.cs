@@ -7,7 +7,7 @@ using Worlds;
 
 namespace Textures
 {
-    public readonly partial struct Texture : ITexture
+    public readonly partial struct Texture : IEntity
     {
         public readonly bool IsLoaded
         {
