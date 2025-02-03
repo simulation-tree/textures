@@ -4,8 +4,9 @@ using System.Numerics;
 
 namespace Textures
 {
-    public static class Vector4Extensions
+    public static class ColorExtensions
     {
+        //todo: these extensions, idk where to put
         public static Vector4 FromHSV(this Vector3 hsv, float alpha = 1)
         {
             float hue = hsv.X;

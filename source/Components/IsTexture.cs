@@ -3,24 +3,22 @@
 namespace Textures.Components
 {
     [Component]
-    public struct IsTexture
+    public readonly struct IsTexture
     {
-        public uint width;
-        public uint height;
-        public uint version;
+        public readonly uint version;
+        public readonly uint width;
+        public readonly uint height;
 
-        public IsTexture(uint width, uint height)
-        {
-            this.version = default;
-            this.width = width;
-            this.height = height;
-        }
-
-        public IsTexture(uint width, uint height, uint version)
+        public IsTexture(uint version, uint width, uint height)
         {
             this.version = version;
             this.width = width;
             this.height = height;
+        }
+
+        public readonly IsTexture IncrementVersion()
+        {
+            return new IsTexture(version + 1, width, height);
         }
     }
 }

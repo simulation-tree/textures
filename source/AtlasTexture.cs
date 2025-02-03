@@ -9,44 +9,32 @@ using Worlds;
 
 namespace Textures
 {
-    public readonly struct AtlasTexture : IEntity
+    public readonly partial struct AtlasTexture : ITexture
     {
-        private readonly Texture texture;
-
-        public readonly USpan<AtlasSprite> Sprites => texture.AsEntity().GetArray<AtlasSprite>();
-        public readonly (uint width, uint height) Size => texture.Size;
-        public readonly uint Width => texture.Width;
-        public readonly uint Height => texture.Height;
-        public readonly uint SpriteCount => texture.AsEntity().GetArrayLength<AtlasSprite>();
-        public readonly AtlasSprite this[uint index] => texture.AsEntity().GetArrayElement<AtlasSprite>(index);
+        public readonly USpan<Pixel> Pixels => GetArray<Pixel>();
+        public readonly (uint width, uint height) Dimensions => As<Texture>().Dimensions;
+        public readonly uint Width => GetComponent<IsTexture>().width;
+        public readonly uint Height => GetComponent<IsTexture>().height;
+        public readonly USpan<AtlasSprite> Sprites => GetArray<AtlasSprite>();
+        public readonly uint SpriteCount => GetArrayLength<AtlasSprite>();
+        public readonly AtlasSprite this[uint index] => GetArrayElement<AtlasSprite>(index);
         public readonly AtlasSprite this[FixedString name] => GetSprite(name);
-
-        readonly uint IEntity.Value => texture.GetEntityValue();
-        readonly World IEntity.World => texture.GetWorld();
 
         readonly void IEntity.Describe(ref Archetype archetype)
         {
             archetype.AddComponentType<IsTexture>();
-            archetype.AddArrayElementType<Pixel>();
-            archetype.AddArrayElementType<AtlasSprite>();
-        }
-
-#if NET
-        [Obsolete("Default constructor not available.", true)]
-        public AtlasTexture()
-        {
-            throw new InvalidOperationException("Cannot create an atlas texture without data.");
-        }
-#endif
-
-        public AtlasTexture(World world, uint existingEntity)
-        {
-            texture = new(world, existingEntity);
+            archetype.AddArrayType<Pixel>();
+            archetype.AddArrayType<AtlasSprite>();
+            archetype.AddTagType<IsAtlasTexture>();
         }
 
         /// <summary>
-        /// Creates a new atlas from the given input sprites
+        /// Creates a new atlas from the given input <paramref name="sprites"/>
         /// into the smallest size possible.
+        /// <para>
+        /// All of the given <paramref name="sprites"/> will be disposed after
+        /// this call.
+        /// </para>
         /// </summary>
         public AtlasTexture(World world, USpan<InputSprite> sprites, uint padding = 0)
         {
@@ -67,9 +55,10 @@ namespace Textures
             Vector2 maxSize = packer.Pack(sizes, positions, padding);
             uint atlasWidth = (uint)maxSize.X;
             uint atlasHeight = (uint)maxSize.Y;
-            texture = new(world, atlasWidth, atlasHeight);
-            USpan<AtlasSprite> spritesList = texture.AsEntity().CreateArray<AtlasSprite>(spriteCount);
-            USpan<Pixel> pixels = texture.Pixels;
+            this.world = world;
+            value = world.CreateEntity(new IsTexture(0, atlasWidth, atlasHeight));
+            USpan<AtlasSprite> spritesList = CreateArray<AtlasSprite>(spriteCount);
+            USpan<Pixel> pixels = CreateArray<Pixel>(atlasWidth * atlasHeight);
             for (uint i = 0; i < spriteCount; i++)
             {
                 InputSprite sprite = sprites[i];
@@ -104,11 +93,6 @@ namespace Textures
             }
         }
 
-        public readonly void Dispose()
-        {
-            texture.Dispose();
-        }
-
         public readonly override string ToString()
         {
             USpan<char> buffer = stackalloc char[64];
@@ -118,7 +102,7 @@ namespace Textures
 
         public readonly uint ToString(USpan<char> buffer)
         {
-            return texture.ToString(buffer);
+            return As<Texture>().ToString(buffer);
         }
 
         public readonly bool TryGetSprite(USpan<char> name, out AtlasSprite sprite)
@@ -159,6 +143,7 @@ namespace Textures
         public readonly AtlasSprite GetSprite(USpan<char> name)
         {
             ThrowIfSpriteIsMissing(new FixedString(name));
+
             TryGetSprite(name, out AtlasSprite sprite);
             return sprite;
         }
@@ -166,18 +151,9 @@ namespace Textures
         public readonly AtlasSprite GetSprite(FixedString name)
         {
             ThrowIfSpriteIsMissing(name);
+
             TryGetSprite(name, out AtlasSprite sprite);
             return sprite;
-        }
-
-        public readonly Vector4 Evaluate(Vector2 position)
-        {
-            return texture.Evaluate(position);
-        }
-
-        public readonly Vector4 Evaluate(float x, float y)
-        {
-            return texture.Evaluate(x, y);
         }
 
         [Conditional("DEBUG")]
@@ -185,18 +161,13 @@ namespace Textures
         {
             if (!ContainsSprite(name))
             {
-                throw new InvalidOperationException($"Sprite named `{name}` not found in atlas texture `{texture}`");
+                throw new InvalidOperationException($"Sprite named `{name}` not found in atlas texture `{value}`");
             }
         }
 
         public static implicit operator Texture(AtlasTexture atlasTexture)
         {
-            return atlasTexture.texture;
-        }
-
-        public static implicit operator Entity(AtlasTexture atlasTexture)
-        {
-            return atlasTexture.AsEntity();
+            return atlasTexture.As<Texture>();
         }
 
         public readonly struct InputSprite : IDisposable
@@ -258,10 +229,12 @@ namespace Textures
                 }
             }
 
+            /// <summary>
+            /// Creates an input sprite from the given <paramref name="texture"/>.
+            /// </summary>
             public InputSprite(FixedString name, Texture texture)
             {
-                this.width = texture.Width;
-                this.height = texture.Height;
+                (width, height) = texture.Dimensions;
                 this.name = name;
                 pixels = new(texture.Pixels);
             }

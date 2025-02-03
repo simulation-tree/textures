@@ -1,6 +1,4 @@
-﻿using Data;
-using Data.Components;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Numerics;
 using Textures.Components;
@@ -9,59 +7,60 @@ using Worlds;
 
 namespace Textures
 {
-    public readonly struct Texture : IEntity, IEquatable<Texture>
+    public readonly partial struct Texture : ITexture
     {
-        private readonly Entity entity;
-
-        public readonly (uint width, uint height) Size
+        public readonly bool IsLoaded
         {
             get
             {
-                ThrowIfDataNotLoadedYet();
-                IsTexture component = entity.GetComponent<IsTexture>();
-                return (component.width, component.height);
+                if (TryGetComponent(out IsTextureRequest request))
+                {
+                    return request.status == IsTextureRequest.Status.Loaded;
+                }
+
+                return IsCompliant;
             }
         }
 
-        public readonly uint Width => Size.width;
-        public readonly uint Height => Size.height;
         public readonly USpan<Pixel> Pixels
         {
             get
             {
-                ThrowIfDataNotLoadedYet();
-                return entity.GetArray<Pixel>();
+                ThrowIfNotLoaded();
+
+                return GetArray<Pixel>();
             }
         }
 
-        public readonly ref Pixel this[uint x, uint y]
+        public readonly (uint width, uint height) Dimensions
         {
             get
             {
-                ThrowIfDataNotLoadedYet();
-                USpan<Pixel> pixels = entity.GetArray<Pixel>();
-                uint index = y * Width + x;
-                if (index >= pixels.Length)
-                {
-                    throw new ArgumentOutOfRangeException(null, "Position must be within the texture.");
-                }
+                ThrowIfNotLoaded();
 
-                return ref pixels[index];
+                IsTexture component = GetComponent<IsTexture>();
+                return (component.width, component.height);
             }
         }
 
-        readonly uint IEntity.Value => entity.value;
-        readonly World IEntity.World => entity.world;
-
-        readonly void IEntity.Describe(ref Archetype archetype)
+        public readonly uint Width
         {
-            archetype.AddComponentType<IsTexture>();
-            archetype.AddArrayElementType<Pixel>();
+            get
+            {
+                ThrowIfNotLoaded();
+
+                return GetComponent<IsTexture>().width;
+            }
         }
 
-        public Texture(World world, uint existingEntity)
+        public readonly uint Height
         {
-            entity = new(world, existingEntity);
+            get
+            {
+                ThrowIfNotLoaded();
+
+                return GetComponent<IsTexture>().height;
+            }
         }
 
         /// <summary>
@@ -69,30 +68,38 @@ namespace Textures
         /// </summary>
         public Texture(World world, uint width, uint height, Pixel defaultPixel = default)
         {
-            entity = new Entity<IsTexture>(world, new IsTexture(width, height));
+            this.world = world;
+            value = world.CreateEntity(new IsTexture(0, width, height));
 
             uint pixelCount = width * height;
-            USpan<Pixel> pixels = entity.CreateArray<Pixel>(pixelCount);
+            USpan<Pixel> pixels = CreateArray<Pixel>(pixelCount);
             pixels.Fill(defaultPixel);
         }
 
+        /// <summary>
+        /// Creates a new empty texture with the given <paramref name="pixels"/>.
+        /// </summary>
         public Texture(World world, uint width, uint height, USpan<Pixel> pixels)
         {
-            entity = new Entity<IsTexture>(world, new IsTexture(width, height));
-            entity.CreateArray(pixels);
+            this.world = world;
+            value = world.CreateEntity(new IsTexture(0, width, height));
+            CreateArray(pixels);
         }
 
         /// <summary>
-        /// Creates a texture+request that loads from the given address.
+        /// Creates a request to load a texture at runtime from
+        /// the given <paramref name="address"/>.
         /// </summary>
-        public Texture(World world, Address address)
+        public Texture(World world, FixedString address, TimeSpan timeout = default)
         {
-            entity = new Entity<IsDataRequest, IsTextureRequest>(world, new IsDataRequest(address), new IsTextureRequest());
+            this.world = world;
+            value = world.CreateEntity(new IsTextureRequest(address, timeout));
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            entity.Dispose();
+            archetype.AddComponentType<IsTexture>();
+            archetype.AddArrayType<Pixel>();
         }
 
         public unsafe readonly override string ToString()
@@ -104,44 +111,26 @@ namespace Textures
 
         public readonly uint ToString(USpan<char> buffer)
         {
+            (uint width, uint height) = Dimensions;
             uint length = 0;
-            length += Width.ToString(buffer.Slice(length));
+            length += width.ToString(buffer.Slice(length));
             buffer[length++] = 'x';
-            length += Height.ToString(buffer.Slice(length));
+            length += height.ToString(buffer.Slice(length));
             buffer[length++] = ' ';
             buffer[length++] = '(';
             buffer[length++] = '`';
-            length += entity.ToString(buffer.Slice(length));
+            length += value.ToString(buffer.Slice(length));
             buffer[length++] = '`';
             buffer[length++] = ')';
             return length;
         }
 
-        [Conditional("DEBUG")]
-        private readonly void ThrowIfDataNotLoadedYet()
-        {
-            if (!entity.ContainsComponent<IsTexture>())
-            {
-                throw new InvalidOperationException($"Texture entity `{entity}` is not yet loaded");
-            }
-        }
-
-        public readonly uint GetVersion()
-        {
-            return entity.GetComponent<IsTexture>().version;
-        }
-
         public readonly Vector4 Evaluate(Vector2 position)
         {
-            ThrowIfDataNotLoadedYet();
-            if (position.X < 0 || position.X > 1 || position.Y < 0 || position.Y > 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(position), "Position must be normalized within the 0-1 range.");
-            }
+            ThrowIfNotLoaded();
+            ThrowIfOutOfBounds(position);
 
-            (uint width, uint height) size = Size;
-            uint width = size.width;
-            uint height = size.height;
+            (uint width, uint height) = Dimensions;
             USpan<Pixel> pixels = Pixels;
             uint maxWidth = width - 1;
             uint maxHeight = height - 1;
@@ -165,34 +154,42 @@ namespace Textures
             return Evaluate(new Vector2(x, y));
         }
 
-        public readonly override bool Equals(object? obj)
+        public readonly ref Pixel GetPixelAt(uint x, uint y)
         {
-            return obj is Texture texture && Equals(texture);
+            ThrowIfNotLoaded();
+
+            USpan<Pixel> pixels = Pixels;
+            uint width = GetComponent<IsTexture>().width;
+            uint index = y * width + x;
+            return ref pixels[index];
         }
 
-        public readonly bool Equals(Texture other)
+        public readonly Pixel SetPixelAt(uint x, uint y, Pixel pixel)
         {
-            return entity.Equals(other.entity);
+            ThrowIfNotLoaded();
+
+            ref Pixel currentPixel = ref GetPixelAt(x, y);
+            Pixel previousPixel = currentPixel;
+            currentPixel = pixel;
+            return previousPixel;
         }
 
-        public readonly override int GetHashCode()
+        [Conditional("DEBUG")]
+        private readonly void ThrowIfNotLoaded()
         {
-            return entity.GetHashCode();
+            if (!IsLoaded)
+            {
+                throw new InvalidOperationException($"Texture entity `{value}` is not yet loaded");
+            }
         }
 
-        public static implicit operator Entity(Texture texture)
+        [Conditional("DEBUG")]
+        private static void ThrowIfOutOfBounds(Vector2 position)
         {
-            return texture.entity;
-        }
-
-        public static bool operator ==(Texture left, Texture right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Texture left, Texture right)
-        {
-            return !(left == right);
+            if (position.X < 0 || position.X > 1 || position.Y < 0 || position.Y > 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(position), $"Position `{position}` is out of bounds");
+            }
         }
     }
 }
