@@ -15,10 +15,5 @@ namespace Textures.Components
             this.width = width;
             this.height = height;
         }
-
-        public readonly IsTexture IncrementVersion()
-        {
-            return new IsTexture(version + 1, width, height);
-        }
     }
 }
