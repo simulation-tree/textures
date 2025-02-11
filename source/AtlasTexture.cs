@@ -3,6 +3,7 @@ using Collections;
 using System;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Textures.Components;
 using Unmanaged;
 using Worlds;
@@ -36,6 +37,7 @@ namespace Textures
         /// this call.
         /// </para>
         /// </summary>
+        [SkipLocalsInit]
         public AtlasTexture(World world, USpan<InputSprite> sprites, uint padding = 0)
         {
             //find the max sprite size
