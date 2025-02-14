@@ -1,8 +1,5 @@
-﻿using Worlds;
-
-namespace Textures.Components
+﻿namespace Textures.Components
 {
-    [Component]
     public readonly struct IsTexture
     {
         public readonly uint version;

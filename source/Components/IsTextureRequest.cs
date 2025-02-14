@@ -1,10 +1,8 @@
 ﻿using System;
 using Unmanaged;
-using Worlds;
 
 namespace Textures.Components
 {
-    [Component]
     public struct IsTextureRequest
     {
         public FixedString address;

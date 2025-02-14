@@ -1,8 +1,5 @@
-﻿using Worlds;
-
-namespace Textures.Components
+﻿namespace Textures.Components
 {
-    [Tag]
     public readonly struct IsAtlasTexture
     {
     }

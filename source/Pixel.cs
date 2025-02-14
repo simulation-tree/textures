@@ -1,10 +1,8 @@
 ﻿using System.Numerics;
 using Unmanaged;
-using Worlds;
 
 namespace Textures
 {
-    [ArrayElement]
     public struct Pixel
     {
         public byte r;
