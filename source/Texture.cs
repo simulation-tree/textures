@@ -22,6 +22,30 @@ namespace Textures
             }
         }
 
+        public readonly TextureType Type
+        {
+            get
+            {
+                if (TryGetComponent(out IsTextureRequest request))
+                {
+                    return request.type;
+                }
+
+                if (ContainsTag<IsAtlasTexture>())
+                {
+                    return TextureType.Atlas;
+                }
+                else if (ContainsTag<CubemapTexture>())
+                {
+                    return TextureType.Cubemap;
+                }
+                else
+                {
+                    return TextureType.Default;
+                }
+            }
+        }
+
         public readonly USpan<Pixel> Pixels
         {
             get
@@ -93,7 +117,7 @@ namespace Textures
         public Texture(World world, FixedString address, TimeSpan timeout = default)
         {
             this.world = world;
-            value = world.CreateEntity(new IsTextureRequest(address, timeout));
+            value = world.CreateEntity(new IsTextureRequest(TextureType.Default, address, timeout));
         }
 
         readonly void IEntity.Describe(ref Archetype archetype)

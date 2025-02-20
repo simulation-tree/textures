@@ -29,5 +29,20 @@ namespace Textures.Tests
                 Assert.That(pixel.a, Is.EqualTo(byte.MaxValue));
             }
         }
+
+        [Test]
+        public void CreateEmptyCubemap()
+        {
+            using World world = CreateWorld();
+            Texture right = new(world, 4, 4);
+            Texture left = new(world, 4, 4);
+            Texture up = new(world, 4, 4);
+            Texture down = new(world, 4, 4);
+            Texture forward = new(world, 4, 4);
+            Texture back = new(world, 4, 4);
+            CubemapTexture cubemap = new(world, right, left, up, down, forward, back);
+
+            Assert.That(cubemap.IsCompliant, Is.True);
+        }
     }
 }
