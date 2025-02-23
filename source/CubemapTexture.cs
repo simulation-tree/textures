@@ -86,7 +86,7 @@ namespace Textures
 
             (uint width, uint height) = right.Dimensions;
             this.world = world;
-            value = world.CreateEntity(new IsTexture(0, width, height));
+            value = world.CreateEntity(new IsTexture(1, width, height));
             AddTag<IsCubemapTexture>();
 
             uint faceLength = width * height;
@@ -110,7 +110,7 @@ namespace Textures
             ThrowIfSizeMismatch(width, height, back);
 
             this.world = world;
-            value = world.CreateEntity(new IsTexture(0, width, height));
+            value = world.CreateEntity(new IsTexture(1, width, height));
             AddTag<IsCubemapTexture>();
 
             uint faceLength = width * height;

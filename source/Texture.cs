@@ -93,7 +93,7 @@ namespace Textures
         public Texture(World world, uint width, uint height, Pixel defaultPixel = default)
         {
             this.world = world;
-            value = world.CreateEntity(new IsTexture(0, width, height));
+            value = world.CreateEntity(new IsTexture(1, width, height));
 
             uint pixelCount = width * height;
             USpan<Pixel> pixels = CreateArray<Pixel>(pixelCount);
@@ -106,7 +106,7 @@ namespace Textures
         public Texture(World world, uint width, uint height, USpan<Pixel> pixels)
         {
             this.world = world;
-            value = world.CreateEntity(new IsTexture(0, width, height));
+            value = world.CreateEntity(new IsTexture(1, width, height));
             CreateArray(pixels);
         }
 

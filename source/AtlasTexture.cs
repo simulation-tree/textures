@@ -58,7 +58,7 @@ namespace Textures
             uint atlasWidth = (uint)maxSize.X;
             uint atlasHeight = (uint)maxSize.Y;
             this.world = world;
-            value = world.CreateEntity(new IsTexture(0, atlasWidth, atlasHeight));
+            value = world.CreateEntity(new IsTexture(1, atlasWidth, atlasHeight));
             USpan<AtlasSprite> spritesList = CreateArray<AtlasSprite>(spriteCount);
             USpan<Pixel> pixels = CreateArray<Pixel>(atlasWidth * atlasHeight);
             for (uint i = 0; i < spriteCount; i++)
