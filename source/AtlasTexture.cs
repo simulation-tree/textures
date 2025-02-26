@@ -1,5 +1,5 @@
 ﻿using BinPacker;
-using Collections;
+using Collections.Generic;
 using System;
 using System.Diagnostics;
 using System.Numerics;
