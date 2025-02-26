@@ -12,11 +12,11 @@ namespace Textures
 {
     public readonly partial struct AtlasTexture : IEntity
     {
-        public readonly USpan<Pixel> Pixels => GetArray<Pixel>();
+        public readonly USpan<Pixel> Pixels => GetArray<Pixel>().AsSpan();
         public readonly (uint width, uint height) Dimensions => As<Texture>().Dimensions;
         public readonly uint Width => GetComponent<IsTexture>().width;
         public readonly uint Height => GetComponent<IsTexture>().height;
-        public readonly USpan<AtlasSprite> Sprites => GetArray<AtlasSprite>();
+        public readonly USpan<AtlasSprite> Sprites => GetArray<AtlasSprite>().AsSpan();
         public readonly uint SpriteCount => GetArrayLength<AtlasSprite>();
         public readonly AtlasSprite this[uint index] => GetArrayElement<AtlasSprite>(index);
         public readonly AtlasSprite this[FixedString name] => GetSprite(name);
@@ -59,8 +59,8 @@ namespace Textures
             uint atlasHeight = (uint)maxSize.Y;
             this.world = world;
             value = world.CreateEntity(new IsTexture(1, atlasWidth, atlasHeight));
-            USpan<AtlasSprite> spritesList = CreateArray<AtlasSprite>(spriteCount);
-            USpan<Pixel> pixels = CreateArray<Pixel>(atlasWidth * atlasHeight);
+            USpan<AtlasSprite> spritesList = CreateArray<AtlasSprite>(spriteCount).AsSpan();
+            USpan<Pixel> pixels = CreateArray<Pixel>(atlasWidth * atlasHeight).AsSpan();
             for (uint i = 0; i < spriteCount; i++)
             {
                 InputSprite sprite = sprites[i];

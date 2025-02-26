@@ -14,7 +14,7 @@ namespace Textures
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>();
+                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
                 uint faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 4, faceLength);
             }
@@ -24,7 +24,7 @@ namespace Textures
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>();
+                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
                 uint faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 5, faceLength);
             }
@@ -34,7 +34,7 @@ namespace Textures
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>();
+                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
                 uint faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 2, faceLength);
             }
@@ -44,7 +44,7 @@ namespace Textures
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>();
+                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
                 uint faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 3, faceLength);
             }
@@ -54,7 +54,7 @@ namespace Textures
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>();
+                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
                 uint faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 0, faceLength);
             }
@@ -64,7 +64,7 @@ namespace Textures
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>();
+                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
                 uint faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 1, faceLength);
             }
@@ -91,7 +91,7 @@ namespace Textures
 
             uint faceLength = width * height;
             uint totalLength = faceLength * 6;
-            USpan<Pixel> pixels = CreateArray<Pixel>(totalLength);
+            USpan<Pixel> pixels = CreateArray<Pixel>(totalLength).AsSpan();
             CopyTo(forward.Pixels, pixels.Slice(faceLength * 4, faceLength), width, height);
             CopyTo(back.Pixels, pixels.Slice(faceLength * 5, faceLength), width, height);
             CopyTo(up.Pixels, pixels.Slice(faceLength * 2, faceLength), width, height);
@@ -115,7 +115,7 @@ namespace Textures
 
             uint faceLength = width * height;
             uint totalLength = faceLength * 6;
-            USpan<Pixel> pixels = CreateArray<Pixel>(totalLength);
+            USpan<Pixel> pixels = CreateArray<Pixel>(totalLength).AsSpan();
             CopyTo(forward, pixels.Slice(faceLength * 0, faceLength), width, height);
             CopyTo(back, pixels.Slice(faceLength * 1, faceLength), width, height);
             CopyTo(up, pixels.Slice(faceLength * 2, faceLength), width, height);
