@@ -19,7 +19,7 @@ namespace Textures
         public readonly USpan<AtlasSprite> Sprites => GetArray<AtlasSprite>().AsSpan();
         public readonly uint SpriteCount => GetArrayLength<AtlasSprite>();
         public readonly AtlasSprite this[uint index] => GetArrayElement<AtlasSprite>(index);
-        public readonly AtlasSprite this[FixedString name] => GetSprite(name);
+        public readonly AtlasSprite this[ASCIIText256 name] => GetSprite(name);
 
         readonly void IEntity.Describe(ref Archetype archetype)
         {
@@ -109,10 +109,10 @@ namespace Textures
 
         public readonly bool TryGetSprite(USpan<char> name, out AtlasSprite sprite)
         {
-            return TryGetSprite(new FixedString(name), out sprite);
+            return TryGetSprite(new ASCIIText256(name), out sprite);
         }
 
-        public readonly bool TryGetSprite(FixedString name, out AtlasSprite sprite)
+        public readonly bool TryGetSprite(ASCIIText256 name, out AtlasSprite sprite)
         {
             USpan<AtlasSprite> sprites = Sprites;
             for (uint i = 0; i < sprites.Length; i++)
@@ -128,7 +128,7 @@ namespace Textures
             return false;
         }
 
-        public readonly bool ContainsSprite(FixedString name)
+        public readonly bool ContainsSprite(ASCIIText256 name)
         {
             USpan<AtlasSprite> sprites = Sprites;
             for (uint i = 0; i < sprites.Length; i++)
@@ -144,13 +144,13 @@ namespace Textures
 
         public readonly AtlasSprite GetSprite(USpan<char> name)
         {
-            ThrowIfSpriteIsMissing(new FixedString(name));
+            ThrowIfSpriteIsMissing(new ASCIIText256(name));
 
             TryGetSprite(name, out AtlasSprite sprite);
             return sprite;
         }
 
-        public readonly AtlasSprite GetSprite(FixedString name)
+        public readonly AtlasSprite GetSprite(ASCIIText256 name)
         {
             ThrowIfSpriteIsMissing(name);
 
@@ -159,7 +159,7 @@ namespace Textures
         }
 
         [Conditional("DEBUG")]
-        private readonly void ThrowIfSpriteIsMissing(FixedString name)
+        private readonly void ThrowIfSpriteIsMissing(ASCIIText256 name)
         {
             if (!ContainsSprite(name))
             {
@@ -174,7 +174,7 @@ namespace Textures
 
         public readonly struct InputSprite : IDisposable
         {
-            public readonly FixedString name;
+            public readonly ASCIIText256 name;
             public readonly uint width;
             public readonly uint height;
 
@@ -201,7 +201,7 @@ namespace Textures
             /// the given channel mask.
             /// </summary>
             public InputSprite(USpan<char> name, uint width, uint height, USpan<byte> channelData, Channels channels)
-                : this(new FixedString(name), width, height, channelData, channels)
+                : this(new ASCIIText256(name), width, height, channelData, channels)
             {
             }
 
@@ -209,7 +209,7 @@ namespace Textures
             /// A sprite with preset data spread out across
             /// the given channel mask.
             /// </summary>
-            public InputSprite(FixedString name, uint width, uint height, USpan<byte> channelData, Channels channels)
+            public InputSprite(ASCIIText256 name, uint width, uint height, USpan<byte> channelData, Channels channels)
             {
                 this.width = width;
                 this.height = height;
@@ -234,7 +234,7 @@ namespace Textures
             /// <summary>
             /// Creates an input sprite from the given <paramref name="texture"/>.
             /// </summary>
-            public InputSprite(FixedString name, Texture texture)
+            public InputSprite(ASCIIText256 name, Texture texture)
             {
                 (width, height) = texture.Dimensions;
                 this.name = name;
@@ -244,7 +244,7 @@ namespace Textures
             /// <summary>
             /// A sprite with preset data.
             /// </summary>
-            public InputSprite(FixedString name, uint width, uint height, USpan<Pixel> pixels)
+            public InputSprite(ASCIIText256 name, uint width, uint height, USpan<Pixel> pixels)
             {
                 this.width = width;
                 this.height = height;
@@ -256,14 +256,14 @@ namespace Textures
             /// A sprite with preset data.
             /// </summary>
             public InputSprite(USpan<char> name, uint width, uint height, USpan<Pixel> pixels)
-                : this(new FixedString(name), width, height, pixels)
+                : this(new ASCIIText256(name), width, height, pixels)
             {
             }
 
             /// <summary>
             /// A blank sprite with default pixels.
             /// </summary>
-            public InputSprite(FixedString name, uint width, uint height)
+            public InputSprite(ASCIIText256 name, uint width, uint height)
             {
                 this.width = width;
                 this.height = height;
@@ -275,7 +275,7 @@ namespace Textures
             /// A blank sprite with default pixels.
             /// </summary>
             public InputSprite(USpan<char> name, uint width, uint height)
-                : this(new FixedString(name), width, height)
+                : this(new ASCIIText256(name), width, height)
             {
             }
 

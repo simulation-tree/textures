@@ -8,7 +8,7 @@ namespace Textures
         /// <summary>
         /// Unique name of the sprite.
         /// </summary>
-        public FixedString name;
+        public ASCIIText256 name;
 
         /// <summary>
         /// Texture coordinates for where this sprite is
@@ -22,7 +22,7 @@ namespace Textures
             this.region = region;
         }
 
-        public AtlasSprite(FixedString name, Vector4 region)
+        public AtlasSprite(ASCIIText256 name, Vector4 region)
         {
             this.name = name;
             this.region = region;

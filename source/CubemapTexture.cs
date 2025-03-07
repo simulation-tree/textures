@@ -70,7 +70,7 @@ namespace Textures
             }
         }
 
-        public CubemapTexture(World world, FixedString address, TimeSpan timeout = default)
+        public CubemapTexture(World world, ASCIIText256 address, TimeSpan timeout = default)
         {
             this.world = world;
             value = world.CreateEntity(new IsTextureRequest(TextureType.Cubemap, address, timeout));

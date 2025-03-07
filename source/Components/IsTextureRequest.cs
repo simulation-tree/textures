@@ -5,13 +5,13 @@ namespace Textures.Components
 {
     public struct IsTextureRequest
     {
-        public FixedString address;
+        public ASCIIText256 address;
         public TimeSpan timeout;
         public TimeSpan duration;
         public Status status;
         public readonly TextureType type;
 
-        public IsTextureRequest(TextureType type, FixedString address, TimeSpan timeout)
+        public IsTextureRequest(TextureType type, ASCIIText256 address, TimeSpan timeout)
         {
             this.address = address;
             this.timeout = timeout;
@@ -20,7 +20,7 @@ namespace Textures.Components
             this.type = type;
         }
 
-        private IsTextureRequest(TextureType type, FixedString address, TimeSpan timeout, TimeSpan duration, Status status)
+        private IsTextureRequest(TextureType type, ASCIIText256 address, TimeSpan timeout, TimeSpan duration, Status status)
         {
             this.address = address;
             this.timeout = timeout;
