@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using Unmanaged;
 
 namespace Textures
@@ -16,7 +17,7 @@ namespace Textures
         /// </summary>
         public Vector4 region;
 
-        public AtlasSprite(USpan<char> name, Vector4 region)
+        public AtlasSprite(ReadOnlySpan<char> name, Vector4 region)
         {
             this.name = new(name);
             this.region = region;
@@ -30,14 +31,14 @@ namespace Textures
 
         public unsafe readonly override string ToString()
         {
-            USpan<char> buffer = stackalloc char[128];
-            uint length = ToString(buffer);
-            return buffer.GetSpan(length).ToString();
+            Span<char> buffer = stackalloc char[128];
+            int length = ToString(buffer);
+            return buffer.Slice(0, length).ToString();
         }
 
-        public readonly uint ToString(USpan<char> buffer)
+        public readonly int ToString(Span<char> buffer)
         {
-            uint length = name.CopyTo(buffer);
+            int length = name.CopyTo(buffer);
             buffer[length++] = ' ';
             buffer[length++] = '[';
             length += region.X.ToString(buffer.Slice(length));

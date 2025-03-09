@@ -1,4 +1,4 @@
-﻿using Unmanaged;
+﻿using System;
 using Worlds;
 
 namespace Textures.Tests
@@ -9,8 +9,8 @@ namespace Textures.Tests
         public void CreateEmptyTexture()
         {
             using World world = CreateWorld();
-            USpan<Pixel> pixels = stackalloc Pixel[16];
-            for (uint i = 0; i < pixels.Length; i++)
+            Span<Pixel> pixels = stackalloc Pixel[16];
+            for (int i = 0; i < pixels.Length; i++)
             {
                 pixels[i] = new Pixel(byte.MaxValue, 0, 0, byte.MaxValue);
             }

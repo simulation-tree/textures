@@ -8,64 +8,64 @@ namespace Textures
 {
     public readonly partial struct CubemapTexture : IEntity
     {
-        public readonly (uint width, uint height) Dimensions => GetComponent<IsTexture>().Dimensions;
-        
-        public readonly USpan<Pixel> Right
+        public readonly (int width, int height) Dimensions => GetComponent<IsTexture>().Dimensions;
+
+        public readonly Span<Pixel> Right
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
-                uint faceLength = GetComponent<IsTexture>().Length;
+                Span<Pixel> pixels = GetArray<Pixel>().AsSpan();
+                int faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 4, faceLength);
             }
         }
 
-        public readonly USpan<Pixel> Left
+        public readonly Span<Pixel> Left
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
-                uint faceLength = GetComponent<IsTexture>().Length;
+                Span<Pixel> pixels = GetArray<Pixel>().AsSpan();
+                int faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 5, faceLength);
             }
         }
 
-        public readonly USpan<Pixel> Up
+        public readonly Span<Pixel> Up
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
-                uint faceLength = GetComponent<IsTexture>().Length;
+                Span<Pixel> pixels = GetArray<Pixel>().AsSpan();
+                int faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 2, faceLength);
             }
         }
 
-        public readonly USpan<Pixel> Down
+        public readonly Span<Pixel> Down
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
-                uint faceLength = GetComponent<IsTexture>().Length;
+                Span<Pixel> pixels = GetArray<Pixel>().AsSpan();
+                int faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 3, faceLength);
             }
         }
 
-        public readonly USpan<Pixel> Forward
+        public readonly Span<Pixel> Forward
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
-                uint faceLength = GetComponent<IsTexture>().Length;
+                Span<Pixel> pixels = GetArray<Pixel>().AsSpan();
+                int faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 0, faceLength);
             }
         }
 
-        public readonly USpan<Pixel> Back
+        public readonly Span<Pixel> Back
         {
             get
             {
-                USpan<Pixel> pixels = GetArray<Pixel>().AsSpan();
-                uint faceLength = GetComponent<IsTexture>().Length;
+                Span<Pixel> pixels = GetArray<Pixel>().AsSpan();
+                int faceLength = GetComponent<IsTexture>().Length;
                 return pixels.Slice(faceLength * 1, faceLength);
             }
         }
@@ -84,14 +84,14 @@ namespace Textures
             ThrowIfSizeMismatch(right, forward);
             ThrowIfSizeMismatch(right, back);
 
-            (uint width, uint height) = right.Dimensions;
+            (int width, int height) = right.Dimensions;
             this.world = world;
             value = world.CreateEntity(new IsTexture(1, width, height));
             AddTag<IsCubemapTexture>();
 
-            uint faceLength = width * height;
-            uint totalLength = faceLength * 6;
-            USpan<Pixel> pixels = CreateArray<Pixel>(totalLength).AsSpan();
+            int faceLength = width * height;
+            int totalLength = faceLength * 6;
+            Span<Pixel> pixels = CreateArray<Pixel>(totalLength).AsSpan();
             CopyTo(forward.Pixels, pixels.Slice(faceLength * 4, faceLength), width, height);
             CopyTo(back.Pixels, pixels.Slice(faceLength * 5, faceLength), width, height);
             CopyTo(up.Pixels, pixels.Slice(faceLength * 2, faceLength), width, height);
@@ -100,7 +100,7 @@ namespace Textures
             CopyTo(left.Pixels, pixels.Slice(faceLength * 1, faceLength), width, height);
         }
 
-        public CubemapTexture(World world, uint width, uint height, USpan<Pixel> right, USpan<Pixel> left, USpan<Pixel> up, USpan<Pixel> down, USpan<Pixel> forward, USpan<Pixel> back)
+        public CubemapTexture(World world, int width, int height, Span<Pixel> right, Span<Pixel> left, Span<Pixel> up, Span<Pixel> down, Span<Pixel> forward, Span<Pixel> back)
         {
             ThrowIfSizeMismatch(width, height, right);
             ThrowIfSizeMismatch(width, height, left);
@@ -113,9 +113,9 @@ namespace Textures
             value = world.CreateEntity(new IsTexture(1, width, height));
             AddTag<IsCubemapTexture>();
 
-            uint faceLength = width * height;
-            uint totalLength = faceLength * 6;
-            USpan<Pixel> pixels = CreateArray<Pixel>(totalLength).AsSpan();
+            int faceLength = width * height;
+            int totalLength = faceLength * 6;
+            Span<Pixel> pixels = CreateArray<Pixel>(totalLength).AsSpan();
             CopyTo(forward, pixels.Slice(faceLength * 0, faceLength), width, height);
             CopyTo(back, pixels.Slice(faceLength * 1, faceLength), width, height);
             CopyTo(up, pixels.Slice(faceLength * 2, faceLength), width, height);
@@ -131,12 +131,12 @@ namespace Textures
             archetype.AddTagType<IsCubemapTexture>();
         }
 
-        private static void CopyTo(USpan<Pixel> source, USpan<Pixel> destination, uint width, uint height)
+        private static void CopyTo(ReadOnlySpan<Pixel> source, Span<Pixel> destination, int width, int height)
         {
-            for (uint i = 0; i < destination.Length; i++)
+            for (int i = 0; i < destination.Length; i++)
             {
-                uint x = i % width;
-                uint y = i / width;
+                int x = i % width;
+                int y = i / width;
                 y = height - y - 1; //flip y
                 destination[i] = source[y * width + x];
             }
@@ -145,8 +145,8 @@ namespace Textures
         [Conditional("DEBUG")]
         private static void ThrowIfSizeMismatch(Texture a, Texture b)
         {
-            (uint width, uint height) aSize = a.Dimensions;
-            (uint width, uint height) bSize = b.Dimensions;
+            (int width, int height) aSize = a.Dimensions;
+            (int width, int height) bSize = b.Dimensions;
             if (aSize.width != bSize.width || aSize.height != bSize.height)
             {
                 throw new InvalidOperationException($"Cubemap texture {a} does not match {b}");
@@ -154,9 +154,9 @@ namespace Textures
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfSizeMismatch(uint width, uint height, USpan<Pixel> pixels)
+        private static void ThrowIfSizeMismatch(int width, int height, Span<Pixel> pixels)
         {
-            uint length = width * height;
+            int length = width * height;
             if (pixels.Length != length)
             {
                 throw new InvalidOperationException($"Cubemap texture size {width}x{height} does not match pixel count {pixels.Length}");

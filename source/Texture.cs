@@ -46,7 +46,7 @@ namespace Textures
             }
         }
 
-        public readonly USpan<Pixel> Pixels
+        public readonly System.Span<Pixel> Pixels
         {
             get
             {
@@ -56,7 +56,7 @@ namespace Textures
             }
         }
 
-        public readonly (uint width, uint height) Dimensions
+        public readonly (int width, int height) Dimensions
         {
             get
             {
@@ -67,7 +67,7 @@ namespace Textures
             }
         }
 
-        public readonly uint Width
+        public readonly int Width
         {
             get
             {
@@ -77,7 +77,7 @@ namespace Textures
             }
         }
 
-        public readonly uint Height
+        public readonly int Height
         {
             get
             {
@@ -90,20 +90,20 @@ namespace Textures
         /// <summary>
         /// Creates a new empty texture with a set size.
         /// </summary>
-        public Texture(World world, uint width, uint height, Pixel defaultPixel = default)
+        public Texture(World world, int width, int height, Pixel defaultPixel = default)
         {
             this.world = world;
             value = world.CreateEntity(new IsTexture(1, width, height));
 
-            uint pixelCount = width * height;
-            USpan<Pixel> pixels = CreateArray<Pixel>(pixelCount).AsSpan();
+            int pixelCount = width * height;
+            Span<Pixel> pixels = CreateArray<Pixel>(pixelCount).AsSpan();
             pixels.Fill(defaultPixel);
         }
 
         /// <summary>
         /// Creates a new empty texture with the given <paramref name="pixels"/>.
         /// </summary>
-        public Texture(World world, uint width, uint height, USpan<Pixel> pixels)
+        public Texture(World world, int width, int height, ReadOnlySpan<Pixel> pixels)
         {
             this.world = world;
             value = world.CreateEntity(new IsTexture(1, width, height));
@@ -128,24 +128,24 @@ namespace Textures
 
         public unsafe readonly override string ToString()
         {
-            USpan<char> buffer = stackalloc char[128];
-            uint length = ToString(buffer);
-            return buffer.GetSpan(length).ToString();
+            Span<char> buffer = stackalloc char[128];
+            int length = ToString(buffer);
+            return buffer.Slice(0, length).ToString();
         }
 
-        public readonly uint ToString(USpan<char> buffer)
+        public readonly int ToString(Span<char> destination)
         {
-            (uint width, uint height) = Dimensions;
-            uint length = 0;
-            length += width.ToString(buffer.Slice(length));
-            buffer[length++] = 'x';
-            length += height.ToString(buffer.Slice(length));
-            buffer[length++] = ' ';
-            buffer[length++] = '(';
-            buffer[length++] = '`';
-            length += value.ToString(buffer.Slice(length));
-            buffer[length++] = '`';
-            buffer[length++] = ')';
+            (int width, int height) = Dimensions;
+            int length = 0;
+            length += width.ToString(destination.Slice(length));
+            destination[length++] = 'x';
+            length += height.ToString(destination.Slice(length));
+            destination[length++] = ' ';
+            destination[length++] = '(';
+            destination[length++] = '`';
+            length += value.ToString(destination.Slice(length));
+            destination[length++] = '`';
+            destination[length++] = ')';
             return length;
         }
 
@@ -154,14 +154,14 @@ namespace Textures
             ThrowIfNotLoaded();
             ThrowIfOutOfBounds(position);
 
-            (uint width, uint height) = Dimensions;
-            USpan<Pixel> pixels = Pixels;
-            uint maxWidth = width - 1;
-            uint maxHeight = height - 1;
-            uint x = (uint)(position.X * maxWidth);
-            uint y = (uint)(position.Y * maxHeight);
-            uint xx = Math.Min(x + 1, maxWidth);
-            uint yy = Math.Min(y + 1, maxHeight);
+            (int width, int height) = Dimensions;
+            Span<Pixel> pixels = Pixels;
+            int maxWidth = width - 1;
+            int maxHeight = height - 1;
+            int x = (int)(position.X * maxWidth);
+            int y = (int)(position.Y * maxHeight);
+            int xx = Math.Min(x + 1, maxWidth);
+            int yy = Math.Min(y + 1, maxHeight);
             Vector4 topLeft = pixels[y * width + x].AsVector4();
             Vector4 topRight = pixels[y * width + xx].AsVector4();
             Vector4 bottomLeft = pixels[yy * width + x].AsVector4();
@@ -178,17 +178,17 @@ namespace Textures
             return Evaluate(new Vector2(x, y));
         }
 
-        public readonly ref Pixel GetPixelAt(uint x, uint y)
+        public readonly ref Pixel GetPixelAt(int x, int y)
         {
             ThrowIfNotLoaded();
 
-            USpan<Pixel> pixels = Pixels;
-            uint width = GetComponent<IsTexture>().width;
-            uint index = y * width + x;
+            Span<Pixel> pixels = Pixels;
+            int width = GetComponent<IsTexture>().width;
+            int index = y * width + x;
             return ref pixels[index];
         }
 
-        public readonly Pixel SetPixelAt(uint x, uint y, Pixel pixel)
+        public readonly Pixel SetPixelAt(int x, int y, Pixel pixel)
         {
             ThrowIfNotLoaded();
 

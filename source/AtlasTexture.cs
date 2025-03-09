@@ -12,13 +12,13 @@ namespace Textures
 {
     public readonly partial struct AtlasTexture : IEntity
     {
-        public readonly USpan<Pixel> Pixels => GetArray<Pixel>().AsSpan();
-        public readonly (uint width, uint height) Dimensions => As<Texture>().Dimensions;
-        public readonly uint Width => GetComponent<IsTexture>().width;
-        public readonly uint Height => GetComponent<IsTexture>().height;
-        public readonly USpan<AtlasSprite> Sprites => GetArray<AtlasSprite>().AsSpan();
-        public readonly uint SpriteCount => GetArrayLength<AtlasSprite>();
-        public readonly AtlasSprite this[uint index] => GetArrayElement<AtlasSprite>(index);
+        public readonly Span<Pixel> Pixels => GetArray<Pixel>().AsSpan();
+        public readonly (int width, int height) Dimensions => As<Texture>().Dimensions;
+        public readonly int Width => GetComponent<IsTexture>().width;
+        public readonly int Height => GetComponent<IsTexture>().height;
+        public readonly ReadOnlySpan<AtlasSprite> Sprites => GetArray<AtlasSprite>().AsSpan();
+        public readonly int SpriteCount => GetArrayLength<AtlasSprite>();
+        public readonly AtlasSprite this[int index] => GetArrayElement<AtlasSprite>(index);
         public readonly AtlasSprite this[ASCIIText256 name] => GetSprite(name);
 
         readonly void IEntity.Describe(ref Archetype archetype)
@@ -38,13 +38,13 @@ namespace Textures
         /// </para>
         /// </summary>
         [SkipLocalsInit]
-        public AtlasTexture(World world, USpan<InputSprite> sprites, uint padding = 0)
+        public AtlasTexture(World world, ReadOnlySpan<InputSprite> sprites, uint padding = 0)
         {
             //find the max sprite size
-            uint spriteCount = sprites.Length;
-            USpan<Vector2> sizes = stackalloc Vector2[(int)spriteCount];
+            int spriteCount = sprites.Length;
+            Span<Vector2> sizes = stackalloc Vector2[spriteCount];
             Vector2 maxSpriteSize = default;
-            for (uint i = 0; i < spriteCount; i++)
+            for (int i = 0; i < spriteCount; i++)
             {
                 InputSprite inputSprite = sprites[i];
                 Vector2 spriteSize = new(inputSprite.width, inputSprite.height);
@@ -53,30 +53,30 @@ namespace Textures
             }
 
             RecursivePacker packer = new();
-            USpan<Vector2> positions = stackalloc Vector2[(int)spriteCount];
+            Span<Vector2> positions = stackalloc Vector2[spriteCount];
             Vector2 maxSize = packer.Pack(sizes, positions, padding);
-            uint atlasWidth = (uint)maxSize.X;
-            uint atlasHeight = (uint)maxSize.Y;
+            int atlasWidth = (int)maxSize.X;
+            int atlasHeight = (int)maxSize.Y;
             this.world = world;
             value = world.CreateEntity(new IsTexture(1, atlasWidth, atlasHeight));
-            USpan<AtlasSprite> spritesList = CreateArray<AtlasSprite>(spriteCount).AsSpan();
-            USpan<Pixel> pixels = CreateArray<Pixel>(atlasWidth * atlasHeight).AsSpan();
-            for (uint i = 0; i < spriteCount; i++)
+            Span<AtlasSprite> spritesList = CreateArray<AtlasSprite>(spriteCount).AsSpan();
+            Span<Pixel> pixels = CreateArray<Pixel>(atlasWidth * atlasHeight).AsSpan();
+            for (int i = 0; i < spriteCount; i++)
             {
                 InputSprite sprite = sprites[i];
                 Vector2 position = positions[i];
                 Vector2 size = sizes[i];
-                uint x = (uint)position.X;
-                uint y = (uint)position.Y;
-                uint width = (uint)size.X;
-                uint height = (uint)size.Y;
-                USpan<Pixel> spritePixels = sprite.Pixels;
-                for (uint p = 0; p < spritePixels.Length; p++)
+                int x = (int)position.X;
+                int y = (int)position.Y;
+                int width = (int)size.X;
+                int height = (int)size.Y;
+                Span<Pixel> spritePixels = sprite.Pixels;
+                for (int p = 0; p < spritePixels.Length; p++)
                 {
                     Pixel spritePixel = spritePixels[p];
-                    uint px = p % width;
-                    uint py = p / width;
-                    uint index = x + px + ((y + py) * atlasWidth);
+                    int px = p % width;
+                    int py = p / width;
+                    int index = x + px + ((y + py) * atlasWidth);
                     pixels[index] = spritePixel;
                 }
 
@@ -97,25 +97,25 @@ namespace Textures
 
         public readonly override string ToString()
         {
-            USpan<char> buffer = stackalloc char[64];
-            uint length = ToString(buffer);
-            return buffer.GetSpan(length).ToString();
+            Span<char> buffer = stackalloc char[64];
+            int length = ToString(buffer);
+            return buffer.Slice(0, length).ToString();
         }
 
-        public readonly uint ToString(USpan<char> buffer)
+        public readonly int ToString(Span<char> destination)
         {
-            return As<Texture>().ToString(buffer);
+            return As<Texture>().ToString(destination);
         }
 
-        public readonly bool TryGetSprite(USpan<char> name, out AtlasSprite sprite)
+        public readonly bool TryGetSprite(System.Span<char> name, out AtlasSprite sprite)
         {
             return TryGetSprite(new ASCIIText256(name), out sprite);
         }
 
         public readonly bool TryGetSprite(ASCIIText256 name, out AtlasSprite sprite)
         {
-            USpan<AtlasSprite> sprites = Sprites;
-            for (uint i = 0; i < sprites.Length; i++)
+            ReadOnlySpan<AtlasSprite> sprites = Sprites;
+            for (int i = 0; i < sprites.Length; i++)
             {
                 if (sprites[i].name.Equals(name))
                 {
@@ -130,8 +130,8 @@ namespace Textures
 
         public readonly bool ContainsSprite(ASCIIText256 name)
         {
-            USpan<AtlasSprite> sprites = Sprites;
-            for (uint i = 0; i < sprites.Length; i++)
+            ReadOnlySpan<AtlasSprite> sprites = Sprites;
+            for (int i = 0; i < sprites.Length; i++)
             {
                 if (sprites[i].name.Equals(name))
                 {
@@ -142,7 +142,7 @@ namespace Textures
             return false;
         }
 
-        public readonly AtlasSprite GetSprite(USpan<char> name)
+        public readonly AtlasSprite GetSprite(System.Span<char> name)
         {
             ThrowIfSpriteIsMissing(new ASCIIText256(name));
 
@@ -175,18 +175,18 @@ namespace Textures
         public readonly struct InputSprite : IDisposable
         {
             public readonly ASCIIText256 name;
-            public readonly uint width;
-            public readonly uint height;
+            public readonly int width;
+            public readonly int height;
 
             private readonly Array<Pixel> pixels;
 
             /// <summary>
             /// All pixels of this sprite.
             /// </summary>
-            public readonly USpan<Pixel> Pixels => pixels.AsSpan();
+            public readonly System.Span<Pixel> Pixels => pixels.AsSpan();
 
-            public ref Pixel this[uint index] => ref pixels[index];
-            public ref Pixel this[uint x, uint y] => ref pixels[x + (y * width)];
+            public ref Pixel this[int index] => ref pixels[index];
+            public ref Pixel this[int x, int y] => ref pixels[x + (y * width)];
 
 #if NET
             [Obsolete("Default constructor not available", true)]
@@ -200,7 +200,7 @@ namespace Textures
             /// A sprite with preset data spread out across
             /// the given channel mask.
             /// </summary>
-            public InputSprite(USpan<char> name, uint width, uint height, USpan<byte> channelData, Channels channels)
+            public InputSprite(ReadOnlySpan<char> name, int width, int height, ReadOnlySpan<byte> channelData, Channels channels)
                 : this(new ASCIIText256(name), width, height, channelData, channels)
             {
             }
@@ -209,7 +209,7 @@ namespace Textures
             /// A sprite with preset data spread out across
             /// the given channel mask.
             /// </summary>
-            public InputSprite(ASCIIText256 name, uint width, uint height, USpan<byte> channelData, Channels channels)
+            public InputSprite(ASCIIText256 name, int width, int height, ReadOnlySpan<byte> channelData, Channels channels)
             {
                 this.width = width;
                 this.height = height;
@@ -220,7 +220,7 @@ namespace Textures
                 bool green = (channels & Channels.Green) == Channels.Green;
                 bool blue = (channels & Channels.Blue) == Channels.Blue;
                 bool alpha = (channels & Channels.Alpha) == Channels.Alpha;
-                for (uint i = 0; i < channelData.Length; i++)
+                for (int i = 0; i < channelData.Length; i++)
                 {
                     byte d = channelData[i];
                     ref Pixel pixel = ref pixels[i];
@@ -244,7 +244,7 @@ namespace Textures
             /// <summary>
             /// A sprite with preset data.
             /// </summary>
-            public InputSprite(ASCIIText256 name, uint width, uint height, USpan<Pixel> pixels)
+            public InputSprite(ASCIIText256 name, int width, int height, ReadOnlySpan<Pixel> pixels)
             {
                 this.width = width;
                 this.height = height;
@@ -255,7 +255,7 @@ namespace Textures
             /// <summary>
             /// A sprite with preset data.
             /// </summary>
-            public InputSprite(USpan<char> name, uint width, uint height, USpan<Pixel> pixels)
+            public InputSprite(ReadOnlySpan<char> name, int width, int height, ReadOnlySpan<Pixel> pixels)
                 : this(new ASCIIText256(name), width, height, pixels)
             {
             }
@@ -263,7 +263,7 @@ namespace Textures
             /// <summary>
             /// A blank sprite with default pixels.
             /// </summary>
-            public InputSprite(ASCIIText256 name, uint width, uint height)
+            public InputSprite(ASCIIText256 name, int width, int height)
             {
                 this.width = width;
                 this.height = height;
@@ -274,7 +274,7 @@ namespace Textures
             /// <summary>
             /// A blank sprite with default pixels.
             /// </summary>
-            public InputSprite(USpan<char> name, uint width, uint height)
+            public InputSprite(ReadOnlySpan<char> name, int width, int height)
                 : this(new ASCIIText256(name), width, height)
             {
             }

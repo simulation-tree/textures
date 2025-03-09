@@ -1,4 +1,4 @@
-﻿using Unmanaged;
+﻿using System;
 using Worlds;
 
 namespace Textures.Tests
@@ -9,27 +9,27 @@ namespace Textures.Tests
         public void CreateAtlasTextureFromSprites()
         {
             using World world = CreateWorld();
-            USpan<AtlasTexture.InputSprite> sprites = stackalloc AtlasTexture.InputSprite[4];
+            Span<AtlasTexture.InputSprite> sprites = stackalloc AtlasTexture.InputSprite[4];
             AtlasTexture.InputSprite a = new("r", 32, 32);
-            for (uint i = 0; i < a.Pixels.Length; i++)
+            for (int i = 0; i < a.Pixels.Length; i++)
             {
                 a.Pixels[i] = new(byte.MaxValue, 0, 0, 0);
             }
 
             AtlasTexture.InputSprite b = new("g", 32, 32);
-            for (uint i = 0; i < b.Pixels.Length; i++)
+            for (int i = 0; i < b.Pixels.Length; i++)
             {
                 b.Pixels[i] = new(0, byte.MaxValue, 0, 0);
             }
 
             AtlasTexture.InputSprite c = new("b", 32, 32);
-            for (uint i = 0; i < c.Pixels.Length; i++)
+            for (int i = 0; i < c.Pixels.Length; i++)
             {
                 c.Pixels[i] = new(0, 0, byte.MaxValue, 0);
             }
 
             AtlasTexture.InputSprite d = new("y", 32, 32);
-            for (uint i = 0; i < d.Pixels.Length; i++)
+            for (int i = 0; i < d.Pixels.Length; i++)
             {
                 d.Pixels[i] = new(byte.MaxValue, byte.MaxValue, 0, 0);
             }
