@@ -107,7 +107,7 @@ namespace Textures
             return As<Texture>().ToString(destination);
         }
 
-        public readonly bool TryGetSprite(System.Span<char> name, out AtlasSprite sprite)
+        public readonly bool TryGetSprite(ReadOnlySpan<char> name, out AtlasSprite sprite)
         {
             return TryGetSprite(new ASCIIText256(name), out sprite);
         }
@@ -142,7 +142,7 @@ namespace Textures
             return false;
         }
 
-        public readonly AtlasSprite GetSprite(System.Span<char> name)
+        public readonly AtlasSprite GetSprite(ReadOnlySpan<char> name)
         {
             ThrowIfSpriteIsMissing(new ASCIIText256(name));
 
@@ -183,7 +183,7 @@ namespace Textures
             /// <summary>
             /// All pixels of this sprite.
             /// </summary>
-            public readonly System.Span<Pixel> Pixels => pixels.AsSpan();
+            public readonly Span<Pixel> Pixels => pixels.AsSpan();
 
             public ref Pixel this[int index] => ref pixels[index];
             public ref Pixel this[int x, int y] => ref pixels[x + (y * width)];

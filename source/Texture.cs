@@ -46,7 +46,7 @@ namespace Textures
             }
         }
 
-        public readonly System.Span<Pixel> Pixels
+        public readonly Span<Pixel> Pixels
         {
             get
             {
