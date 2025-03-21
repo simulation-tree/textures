@@ -52,7 +52,7 @@ namespace Textures
             {
                 ThrowIfNotLoaded();
 
-                return GetArray<Pixel>().AsSpan();
+                return GetArray<Pixel>();
             }
         }
 
@@ -96,7 +96,7 @@ namespace Textures
             value = world.CreateEntity(new IsTexture(1, width, height));
 
             int pixelCount = width * height;
-            Span<Pixel> pixels = CreateArray<Pixel>(pixelCount).AsSpan();
+            Span<Pixel> pixels = CreateArray<Pixel>(pixelCount);
             pixels.Fill(defaultPixel);
         }
 
