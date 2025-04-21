@@ -2,11 +2,11 @@
 
 namespace Textures.Components
 {
-    public readonly struct IsTexture : IEquatable<IsTexture>
+    public struct IsTexture : IEquatable<IsTexture>
     {
-        public readonly uint version;
-        public readonly int width;
-        public readonly int height;
+        public ushort version;
+        public int width;
+        public int height;
 
         public readonly (int width, int height) Dimensions => (width, height);
         public readonly int Length => width * height;
@@ -19,16 +19,11 @@ namespace Textures.Components
         }
 #endif
 
-        public IsTexture(uint version, int width, int height)
+        public IsTexture(ushort version, int width, int height)
         {
             this.version = version;
             this.width = width;
             this.height = height;
-        }
-
-        public readonly IsTexture IncrementVersion(int width, int height)
-        {
-            return new IsTexture(version + 1, width, height);
         }
 
         public readonly override bool Equals(object? obj)
