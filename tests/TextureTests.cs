@@ -8,7 +8,7 @@ namespace Textures.Tests
     {
         static TextureTests()
         {
-            MetadataRegistry.Load<TexturesTypeBank>();
+            MetadataRegistry.Load<TexturesMetadataBank>();
         }
 
         protected override Schema CreateSchema()
