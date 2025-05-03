@@ -35,7 +35,11 @@ namespace Textures.Tests
         {
             using World world = CreateWorld();
             Texture right = new(world, 4, 4);
+            Assert.That(right.Width, Is.EqualTo(4));
+            Assert.That(right.Height, Is.EqualTo(4));
             Texture left = new(world, 4, 4);
+            Assert.That(left.Width, Is.EqualTo(4));
+            Assert.That(left.Height, Is.EqualTo(4));
             Texture up = new(world, 4, 4);
             Texture down = new(world, 4, 4);
             Texture forward = new(world, 4, 4);
