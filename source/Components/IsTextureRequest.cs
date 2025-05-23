@@ -1,21 +1,20 @@
-﻿using System;
-using Unmanaged;
+﻿using Unmanaged;
 
 namespace Textures.Components
 {
     public struct IsTextureRequest
     {
         public ASCIIText256 address;
-        public TimeSpan timeout;
-        public TimeSpan duration;
+        public double timeout;
+        public double duration;
         public Status status;
         public readonly TextureType type;
 
-        public IsTextureRequest(TextureType type, ASCIIText256 address, TimeSpan timeout)
+        public IsTextureRequest(TextureType type, ASCIIText256 address, double timeout)
         {
             this.address = address;
             this.timeout = timeout;
-            duration = TimeSpan.Zero;
+            duration = 0;
             status = Status.Submitted;
             this.type = type;
         }
