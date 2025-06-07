@@ -32,9 +32,9 @@
 
   <ItemGroup>
     <Content Include="bin/Debug/net9.0/Textures.dll" Pack="true" PackagePath="tools/debug/Textures.dll" Visible="false"/>
-    <Content Include="bin/Debug/net9.0/Textures.xml" Pack="true" PackagePath="tools/debug/Textures.xml" Visible="false"/>
+    <Content Include="bin/Debug/net9.0/Textures.xml" Pack="true" PackagePath="tools/debug/Textures.xml" Visible="false" Condition="Exists('bin/Debug/net9.0/Textures.xml')"/>
     <Content Include="bin/Release/net9.0/Textures.dll" Pack="true" PackagePath="tools/release/Textures.dll" Visible="false"/>
-    <Content Include="bin/Release/net9.0/Textures.xml" Pack="true" PackagePath="tools/release/Textures.xml" Visible="false"/>
+    <Content Include="bin/Release/net9.0/Textures.xml" Pack="true" PackagePath="tools/release/Textures.xml" Visible="false" Condition="Exists('bin/Release/net9.0/Textures.xml')"/>
     <Content Include="build/Textures.targets" Pack="true" PackagePath="build/Textures.targets" Visible="false"/>
   </ItemGroup>
 
