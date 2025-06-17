@@ -46,6 +46,9 @@ namespace Textures
             }
         }
 
+        /// <summary>
+        /// All pixels of the texture.
+        /// </summary>
         public readonly Span<Pixel> Pixels
         {
             get
@@ -56,6 +59,9 @@ namespace Textures
             }
         }
 
+        /// <summary>
+        /// Dimensions of the texture in pixels.
+        /// </summary>
         public readonly (int width, int height) Dimensions
         {
             get
@@ -67,6 +73,9 @@ namespace Textures
             }
         }
 
+        /// <summary>
+        /// Width of the texture in pixels.
+        /// </summary>
         public readonly int Width
         {
             get
@@ -77,6 +86,9 @@ namespace Textures
             }
         }
 
+        /// <summary>
+        /// Height of the texture in pixels.
+        /// </summary>
         public readonly int Height
         {
             get
@@ -149,6 +161,9 @@ namespace Textures
             return length;
         }
 
+        /// <summary>
+        /// Evaluates the texture at the given <paramref name="position"/>.
+        /// </summary>
         public readonly Vector4 Evaluate(Vector2 position)
         {
             ThrowIfNotLoaded();
@@ -173,28 +188,43 @@ namespace Textures
             return Vector4.Lerp(top, bottom, yFactor);
         }
 
+        /// <summary>
+        /// Evaluates the texture at the given position.
+        /// </summary>
         public readonly Vector4 Evaluate(float x, float y)
         {
             return Evaluate(new Vector2(x, y));
         }
 
+        /// <summary>
+        /// Retrieves the pixel at the given position.
+        /// </summary>
         public readonly ref Pixel GetPixelAt(int x, int y)
         {
             ThrowIfNotLoaded();
 
             Span<Pixel> pixels = Pixels;
-            int width = GetComponent<IsTexture>().width;
-            int index = y * width + x;
-            return ref pixels[index];
+            IsTexture component = GetComponent<IsTexture>();
+            ThrowIfOutOfBounds(x, y, component.width, component.height);
+
+            return ref pixels[GetIndex(x, y, component.width)];
         }
 
+        /// <summary>
+        /// Assigns a pixel at the given position and returns the previous pixel.
+        /// </summary>
+        /// <returns>The previous value.</returns>
         public readonly Pixel SetPixelAt(int x, int y, Pixel pixel)
         {
             ThrowIfNotLoaded();
 
-            ref Pixel currentPixel = ref GetPixelAt(x, y);
-            Pixel previousPixel = currentPixel;
-            currentPixel = pixel;
+            Span<Pixel> pixels = Pixels;
+            IsTexture component = GetComponent<IsTexture>();
+            ThrowIfOutOfBounds(x, y, component.width, component.height);
+
+            int index = GetIndex(x, y, component.width);
+            Pixel previousPixel = pixels[index];
+            pixels[index] = pixel;
             return previousPixel;
         }
 
@@ -214,6 +244,34 @@ namespace Textures
             {
                 throw new ArgumentOutOfRangeException(nameof(position), $"Position `{position}` is out of bounds");
             }
+        }
+
+        [Conditional("DEBUG")]
+        private static void ThrowIfOutOfBounds(int x, int y, int width, int height)
+        {
+            if (x < 0 || x >= width || y < 0 || y >= height)
+            {
+                throw new ArgumentOutOfRangeException($"Coordinates ({x}, {y}) are out of bounds for texture size ({width}, {height})");
+            }
+        }
+
+        /// <summary>
+        /// Calculates the index of a pixel in a texture based
+        /// on the <paramref name="x"/> and <paramref name="y"/> coordinates
+        /// </summary>
+        public static int GetIndex(int x, int y, int width)
+        {
+            return y * width + x;
+        }
+
+        /// <summary>
+        /// Calculates the <paramref name="x"/> and <paramref name="y"/> based on
+        /// the given <paramref name="index"/>.
+        /// </summary>
+        public static void GetPosition(int index, int width, out int x, out int y)
+        {
+            x = index % width;
+            y = index / width;
         }
     }
 }

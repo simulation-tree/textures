@@ -14,16 +14,17 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <OutDir>bin/$(TargetFramework)/$(Configuration)</OutDir>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\bin-packer\source\BinPacker.csproj"/>
-    <ProjectReference Include="..\..\unmanaged\core\Unmanaged.Core.csproj"/>
+    <ProjectReference Include="..\..\bin-packer\source\BinPacker.csproj" />
+    <ProjectReference Include="..\..\unmanaged\core\Unmanaged.Core.csproj" />
     <ProjectReference Include="..\..\types\generator\Types.Generator.csproj">
       <OutputItemType>Analyzer</OutputItemType>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\..\worlds\core\Worlds.Core.csproj"/>
+    <ProjectReference Include="..\..\worlds\core\Worlds.Core.csproj" />
     <ProjectReference Include="..\..\worlds\generator\Worlds.Generator.csproj">
       <OutputItemType>Analyzer</OutputItemType>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -31,8 +32,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="bin/**/*" Pack="true" PackagePath="lib" Visible="false"/>
-    <Content Include="buildTransitive/**/*" Pack="true" PackagePath="buildTransitive"/>
+    <Content Include="bin/**/*" Pack="true" PackagePath="lib" Visible="false" />
+    <Content Include="buildTransitive/**/*" Pack="true" PackagePath="buildTransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

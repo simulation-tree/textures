@@ -1,15 +1,15 @@
 # Textures
+
 Definitions for images, and for atlases with their sprites.
 
 ### Importing images
+
 ```cs
-using World world = new();
 Texture texture = new(world, "*/texture.png");
-while (!texture.Is())
+while (!texture.IsCompliant)
 {
-    world.Submit(new DataUpdate()); //to load the bytes
-    world.Submit(new TextureUpdate()); //load import the texture from the bytes
-    world.Poll();
+    simulator.Broadcast(new DataUpdate()); //to load the bytes
+    simulator.Broadcast(new TextureUpdate()); //load import the texture from the bytes
 }
 
 Assert.That(texture.Width, Is.EqualTo(1024));
@@ -20,6 +20,7 @@ Assert.That(pixels.Length, Is.EqualTo(1024 * 1024));
 ```
 
 ### Evaluating pixels
+
 When textures are loaded, their colours can be evaluated at floating point coordinates, or exact coordinates:
 ```cs
 Color color = texture.Evaluate(0.5f, 0.5f);
@@ -27,6 +28,7 @@ Pixel exactPixel = texture[512, 512];
 ```
 
 ### Creating atlases from inputs
+
 An `AtlasTexture` can be created from a series of sprites, each with individual pixel data into
 the smallest possible texture:
 ```cs
