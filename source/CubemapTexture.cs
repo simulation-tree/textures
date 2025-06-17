@@ -70,13 +70,13 @@ namespace Textures
             }
         }
 
-        public CubemapTexture(World world, ASCIIText256 address, double timeout = default)
+        public CubemapTexture(World world, ASCIIText256 address, double timeout = default, IsTextureRequest.Flags flags = IsTextureRequest.Flags.FlipY)
         {
             this.world = world;
-            value = world.CreateEntity(new IsTextureRequest(TextureType.Cubemap, address, timeout));
+            value = world.CreateEntity(new IsTextureRequest(TextureType.Cubemap, address, timeout, flags));
         }
 
-        public CubemapTexture(World world, Texture right, Texture left, Texture up, Texture down, Texture forward, Texture back)
+        public CubemapTexture(World world, Texture right, Texture left, Texture up, Texture down, Texture forward, Texture back, IsTextureRequest.Flags flags = IsTextureRequest.Flags.FlipY)
         {
             ThrowIfSizeMismatch(right, left);
             ThrowIfSizeMismatch(right, up);
@@ -92,15 +92,15 @@ namespace Textures
             int faceLength = width * height;
             int totalLength = faceLength * 6;
             Span<Pixel> pixels = CreateArray<Pixel>(totalLength);
-            CopyTo(forward.Pixels, pixels.Slice(faceLength * 4, faceLength), width, height);
-            CopyTo(back.Pixels, pixels.Slice(faceLength * 5, faceLength), width, height);
-            CopyTo(up.Pixels, pixels.Slice(faceLength * 2, faceLength), width, height);
-            CopyTo(down.Pixels, pixels.Slice(faceLength * 3, faceLength), width, height);
-            CopyTo(right.Pixels, pixels.Slice(faceLength * 0, faceLength), width, height);
-            CopyTo(left.Pixels, pixels.Slice(faceLength * 1, faceLength), width, height);
+            CopyTo(forward.Pixels, pixels.Slice(faceLength * 4, faceLength), width, height, flags);
+            CopyTo(back.Pixels, pixels.Slice(faceLength * 5, faceLength), width, height, flags);
+            CopyTo(up.Pixels, pixels.Slice(faceLength * 2, faceLength), width, height, flags);
+            CopyTo(down.Pixels, pixels.Slice(faceLength * 3, faceLength), width, height, flags);
+            CopyTo(right.Pixels, pixels.Slice(faceLength * 0, faceLength), width, height, flags);
+            CopyTo(left.Pixels, pixels.Slice(faceLength * 1, faceLength), width, height, flags);
         }
 
-        public CubemapTexture(World world, int width, int height, Span<Pixel> right, Span<Pixel> left, Span<Pixel> up, Span<Pixel> down, Span<Pixel> forward, Span<Pixel> back)
+        public CubemapTexture(World world, int width, int height, Span<Pixel> right, Span<Pixel> left, Span<Pixel> up, Span<Pixel> down, Span<Pixel> forward, Span<Pixel> back, IsTextureRequest.Flags flags = IsTextureRequest.Flags.FlipY)
         {
             ThrowIfSizeMismatch(width, height, right);
             ThrowIfSizeMismatch(width, height, left);
@@ -116,12 +116,12 @@ namespace Textures
             int faceLength = width * height;
             int totalLength = faceLength * 6;
             Span<Pixel> pixels = CreateArray<Pixel>(totalLength);
-            CopyTo(forward, pixels.Slice(faceLength * 0, faceLength), width, height);
-            CopyTo(back, pixels.Slice(faceLength * 1, faceLength), width, height);
-            CopyTo(up, pixels.Slice(faceLength * 2, faceLength), width, height);
-            CopyTo(down, pixels.Slice(faceLength * 3, faceLength), width, height);
-            CopyTo(right, pixels.Slice(faceLength * 4, faceLength), width, height);
-            CopyTo(left, pixels.Slice(faceLength * 5, faceLength), width, height);
+            CopyTo(forward, pixels.Slice(faceLength * 0, faceLength), width, height, flags);
+            CopyTo(back, pixels.Slice(faceLength * 1, faceLength), width, height, flags);
+            CopyTo(up, pixels.Slice(faceLength * 2, faceLength), width, height, flags);
+            CopyTo(down, pixels.Slice(faceLength * 3, faceLength), width, height, flags);
+            CopyTo(right, pixels.Slice(faceLength * 4, faceLength), width, height, flags);
+            CopyTo(left, pixels.Slice(faceLength * 5, faceLength), width, height, flags);
         }
 
         readonly void IEntity.Describe(ref Archetype archetype)
@@ -131,14 +131,20 @@ namespace Textures
             archetype.AddTagType<IsCubemapTexture>();
         }
 
-        private static void CopyTo(ReadOnlySpan<Pixel> source, Span<Pixel> destination, int width, int height)
+        private static void CopyTo(ReadOnlySpan<Pixel> source, Span<Pixel> destination, int width, int height, IsTextureRequest.Flags flags)
         {
-            for (int i = 0; i < destination.Length; i++)
+            if ((flags & IsTextureRequest.Flags.FlipY) != 0)
             {
-                int x = i % width;
-                int y = i / width;
-                y = height - y - 1; //flip y
-                destination[i] = source[y * width + x];
+                for (int i = 0; i < destination.Length; i++)
+                {
+                    Texture.GetPosition(i, width, out int x, out int y);
+                    y = height - y - 1;
+                    destination[i] = source[Texture.GetIndex(x, y, width)];
+                }
+            }
+            else
+            {
+                source.CopyTo(destination);
             }
         }
 

@@ -126,10 +126,10 @@ namespace Textures
         /// Creates a request to load a texture at runtime from
         /// the given <paramref name="address"/>.
         /// </summary>
-        public Texture(World world, ASCIIText256 address, double timeout = default)
+        public Texture(World world, ASCIIText256 address, double timeout = default, IsTextureRequest.Flags flags = IsTextureRequest.Flags.FlipY)
         {
             this.world = world;
-            value = world.CreateEntity(new IsTextureRequest(TextureType.Default, address, timeout));
+            value = world.CreateEntity(new IsTextureRequest(TextureType.Default, address, timeout, flags));
         }
 
         readonly void IEntity.Describe(ref Archetype archetype)

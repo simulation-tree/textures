@@ -1,4 +1,5 @@
-﻿using Unmanaged;
+﻿using System;
+using Unmanaged;
 
 namespace Textures.Components
 {
@@ -8,15 +9,17 @@ namespace Textures.Components
         public double timeout;
         public double duration;
         public Status status;
+        public readonly Flags flags;
         public readonly TextureType type;
 
-        public IsTextureRequest(TextureType type, ASCIIText256 address, double timeout)
+        public IsTextureRequest(TextureType type, ASCIIText256 address, double timeout, Flags flags)
         {
             this.address = address;
             this.timeout = timeout;
             duration = 0;
             status = Status.Submitted;
             this.type = type;
+            this.flags = flags;
         }
 
         public enum Status : byte
@@ -25,6 +28,13 @@ namespace Textures.Components
             Loading,
             Loaded,
             NotFound
+        }
+
+        [Flags]
+        public enum Flags : byte
+        {
+            None = 0,
+            FlipY = 1
         }
     }
 }
