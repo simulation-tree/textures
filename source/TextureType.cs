@@ -2,7 +2,7 @@
 {
     public enum TextureType : byte
     {
-        Default,
+        Flat,
         Atlas,
         Cubemap
     }

@@ -28,7 +28,7 @@ namespace Textures
             {
                 if (TryGetComponent(out IsTextureRequest request))
                 {
-                    return request.type;
+                    return request.flags.GetTextureType();
                 }
 
                 if (ContainsTag<IsAtlasTexture>())
@@ -41,7 +41,7 @@ namespace Textures
                 }
                 else
                 {
-                    return TextureType.Default;
+                    return TextureType.Flat;
                 }
             }
         }
@@ -129,7 +129,8 @@ namespace Textures
         public Texture(World world, ASCIIText256 address, double timeout = default, IsTextureRequest.Flags flags = IsTextureRequest.Flags.FlipY)
         {
             this.world = world;
-            value = world.CreateEntity(new IsTextureRequest(TextureType.Default, address, timeout, flags));
+            flags |= IsTextureRequest.Flags.FlatTexture;
+            value = world.CreateEntity(new IsTextureRequest(flags, address, timeout));
         }
 
         readonly void IEntity.Describe(ref Archetype archetype)

@@ -73,7 +73,8 @@ namespace Textures
         public CubemapTexture(World world, ASCIIText256 address, double timeout = default, IsTextureRequest.Flags flags = IsTextureRequest.Flags.FlipY)
         {
             this.world = world;
-            value = world.CreateEntity(new IsTextureRequest(TextureType.Cubemap, address, timeout, flags));
+            flags |= IsTextureRequest.Flags.CubemapTexture;
+            value = world.CreateEntity(new IsTextureRequest(flags, address, timeout));
         }
 
         public CubemapTexture(World world, Texture right, Texture left, Texture up, Texture down, Texture forward, Texture back, IsTextureRequest.Flags flags = IsTextureRequest.Flags.FlipY)
