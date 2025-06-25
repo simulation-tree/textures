@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Textures
 {
-    public struct Pixel
+    public struct Pixel : IEquatable<Pixel>
     {
         public byte r;
         public byte g;
@@ -26,7 +26,7 @@ namespace Textures
             a = (byte)(value & 0xFF);
         }
 
-        public unsafe readonly override string ToString()
+        public readonly override string ToString()
         {
             Span<char> buffer = stackalloc char[256];
             int length = ToString(buffer);
@@ -53,6 +53,45 @@ namespace Textures
         public readonly uint AsUInt()
         {
             return ((uint)r << 24) | ((uint)g << 16) | ((uint)b << 8) | a;
+        }
+
+        public readonly int AsInt()
+        {
+            return (r << 24) | (g << 16) | (b << 8) | a;
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is Pixel pixel && Equals(pixel);
+        }
+
+        public readonly bool Equals(Pixel other)
+        {
+            return r == other.r && g == other.g && b == other.b && a == other.a;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return AsInt();
+        }
+
+        public static Pixel Average(Pixel first, Pixel second)
+        {
+            byte r = (byte)((first.r + second.r) * 0.5f);
+            byte g = (byte)((first.g + second.g) * 0.5f);
+            byte b = (byte)((first.b + second.b) * 0.5f);
+            byte a = (byte)((first.a + second.a) * 0.5f);
+            return new Pixel(r, g, b, a);
+        }
+
+        public static bool operator ==(Pixel left, Pixel right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Pixel left, Pixel right)
+        {
+            return !(left == right);
         }
     }
 }

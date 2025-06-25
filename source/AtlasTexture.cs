@@ -38,18 +38,15 @@ namespace Textures
         /// </para>
         /// </summary>
         [SkipLocalsInit]
-        public AtlasTexture(World world, ReadOnlySpan<InputSprite> sprites, uint padding = 0)
+        public AtlasTexture(World world, ReadOnlySpan<InputSprite> sprites, int padding = 0, IsTextureRequest.Flags flags = default)
         {
             //find the max sprite size
             int spriteCount = sprites.Length;
             Span<Vector2> sizes = stackalloc Vector2[spriteCount];
-            Vector2 maxSpriteSize = default;
-            for (int i = 0; i < spriteCount; i++)
+            for (int s = 0; s < spriteCount; s++)
             {
-                InputSprite inputSprite = sprites[i];
-                Vector2 spriteSize = new(inputSprite.width, inputSprite.height);
-                sizes[i] = spriteSize;
-                maxSpriteSize = Vector2.Max(maxSpriteSize, spriteSize);
+                InputSprite inputSprite = sprites[s];
+                sizes[s] = new(inputSprite.width, inputSprite.height);
             }
 
             RecursivePacker packer = new();
@@ -60,37 +57,85 @@ namespace Textures
             this.world = world;
             value = world.CreateEntity(new IsTexture(1, atlasWidth, atlasHeight));
             Span<AtlasSprite> spritesList = CreateArray<AtlasSprite>(spriteCount);
-            Span<Pixel> pixels = CreateArray<Pixel>(atlasWidth * atlasHeight);
-            for (int i = 0; i < spriteCount; i++)
+            Span<Pixel> atlasPixels = CreateArray<Pixel>(atlasWidth * atlasHeight);
+            for (int s = 0; s < spriteCount; s++)
             {
-                InputSprite sprite = sprites[i];
-                Vector2 position = positions[i];
-                Vector2 size = sizes[i];
-                int x = (int)position.X;
-                int y = (int)position.Y;
-                int width = (int)size.X;
-                int height = (int)size.Y;
+                InputSprite sprite = sprites[s];
+                Vector2 position = positions[s];
+                Vector2 size = sizes[s];
+                int spriteX = (int)position.X;
+                int spriteY = (int)position.Y;
+                int spriteWidth = (int)size.X;
+                int spriteHeight = (int)size.Y;
                 Span<Pixel> spritePixels = sprite.Pixels;
                 for (int p = 0; p < spritePixels.Length; p++)
                 {
-                    Pixel spritePixel = spritePixels[p];
-                    int px = p % width;
-                    int py = p / width;
-                    int index = x + px + ((y + py) * atlasWidth);
-                    pixels[index] = spritePixel;
+                    Texture.GetPosition(p, spriteWidth, out int px, out int py);
+                    atlasPixels[Texture.GetIndex(spriteX + px, spriteY + py, atlasWidth)] = spritePixels[p];
                 }
 
                 Vector4 region = default;
-                region.X = x / (float)atlasWidth;
-                region.Y = y / (float)atlasHeight;
-                region.Z = region.X + width / (float)atlasWidth;
-                region.W = region.Y + height / (float)atlasHeight;
+                region.X = spriteX / (float)atlasWidth;
+                region.Y = spriteY / (float)atlasHeight;
+                region.Z = region.X + spriteWidth / (float)atlasWidth;
+                region.W = region.Y + spriteHeight / (float)atlasHeight;
 
                 //flip y
-                //region.Y += region.W;
-                //region.W *= -1;
+                if ((flags & IsTextureRequest.Flags.FlipY) != 0)
+                {
+                    region.Y += region.W;
+                    region.W *= -1;
+                }
 
-                spritesList[i] = new(sprite.name, region);
+                //bleed the sprite
+                if (padding > 0 && (flags & IsTextureRequest.Flags.BleedPixels) != 0)
+                {
+                    //left
+                    for (int y = -padding; y < spriteHeight + padding; y++)
+                    {
+                        Pixel spritePixel = spritePixels[Texture.GetIndex(0, Math.Min(0, Math.Max(spriteHeight - 1, y)), spriteWidth)];
+                        for (int o = 1; o <= padding; o++)
+                        {
+                            ref Pixel atlasPixel = ref atlasPixels[Texture.GetIndex(spriteX - o, spriteY + y, atlasWidth)];
+                            atlasPixel = atlasPixel == default ? spritePixel : Pixel.Average(atlasPixel, spritePixel);
+                        }
+                    }
+
+                    //right
+                    for (int y = -padding; y < spriteHeight + padding; y++)
+                    {
+                        Pixel spritePixel = spritePixels[Texture.GetIndex(spriteWidth - 1, Math.Min(0, Math.Max(spriteHeight - 1, y)), spriteWidth)];
+                        for (int o = 0; o < padding; o++)
+                        {
+                            ref Pixel atlasPixel = ref atlasPixels[Texture.GetIndex(spriteX + spriteWidth + o, spriteY + y, atlasWidth)];
+                            atlasPixel = atlasPixel == default ? spritePixel : Pixel.Average(atlasPixel, spritePixel);
+                        }
+                    }
+
+                    //down
+                    for (int x = -padding; x < spriteWidth + padding; x++)
+                    {
+                        Pixel spritePixel = spritePixels[Texture.GetIndex(Math.Min(0, Math.Max(spriteWidth - 1, x)), 0, spriteWidth)];
+                        for (int o = 1; o <= padding; o++)
+                        {
+                            ref Pixel atlasPixel = ref atlasPixels[Texture.GetIndex(spriteX + x, spriteY - o, atlasWidth)];
+                            atlasPixel = atlasPixel == default ? spritePixel : Pixel.Average(atlasPixel, spritePixel);
+                        }
+                    }
+
+                    //up
+                    for (int x = -padding; x < spriteWidth + padding; x++)
+                    {
+                        Pixel spritePixel = spritePixels[Texture.GetIndex(Math.Min(0, Math.Max(spriteWidth - 1, x)), spriteHeight - 1, spriteWidth)];
+                        for (int o = 0; o < padding; o++)
+                        {
+                            ref Pixel atlasPixel = ref atlasPixels[Texture.GetIndex(spriteX + x, spriteY + spriteHeight + o, atlasWidth)];
+                            atlasPixel = atlasPixel == default ? spritePixel : Pixel.Average(atlasPixel, spritePixel);
+                        }
+                    }
+                }
+
+                spritesList[s] = new(sprite.name, region);
                 sprite.Dispose();
             }
         }

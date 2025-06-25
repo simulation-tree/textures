@@ -35,7 +35,13 @@ namespace Textures.Components
             FlipY = 1,
             FlatTexture = 2,
             CubemapTexture = 4,
-            AtlasTexture = 8
+            AtlasTexture = 8,
+
+            /// <summary>
+            /// Input sprites of the <see cref="Textures.AtlasTexture"/> will
+            /// be bled out with the padding amount into the gaps.
+            /// </summary>
+            BleedPixels = 16
         }
     }
 }
