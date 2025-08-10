@@ -3,7 +3,7 @@
 
     <ItemGroup>
         <Reference Include="Textures">
-            <HintPath>$(MSBuildThisFileDirectory)..\lib\net9.0\$(Configuration)\Textures.dll</HintPath>
+            <HintPath>$(MSBuildThisFileDirectory)..\lib\$(TargetFramework)\$(Configuration)\Textures.dll</HintPath>
         </Reference>
     </ItemGroup>
 
