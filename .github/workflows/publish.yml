@@ -15,12 +15,12 @@ jobs:
         with:
           path: ${{ github.event.repository.name }}
             
-      - name: Checkout `worlds`
+      - name: Checkout `bin-packer`
         uses: actions/checkout@v4.1.2
         with:
-          repository: simulation-tree/worlds
+          repository: simulation-tree/bin-packer
           token: ${{ secrets.PAT }}
-          path: worlds
+          path: bin-packer
       
       - name: Checkout `unmanaged`
         uses: actions/checkout@v4.1.2
@@ -29,12 +29,12 @@ jobs:
           token: ${{ secrets.PAT }}
           path: unmanaged
       
-      - name: Checkout `bin-packer`
+      - name: Checkout `worlds`
         uses: actions/checkout@v4.1.2
         with:
-          repository: simulation-tree/bin-packer
+          repository: simulation-tree/worlds
           token: ${{ secrets.PAT }}
-          path: bin-packer
+          path: worlds
       
       - name: Checkout `types`
         uses: actions/checkout@v4.1.2
@@ -53,9 +53,7 @@ jobs:
       - name: Setup
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            9.0.x
-            10.0.x
+          dotnet-version: 9.0.x
 
       - name: Set VERSION variable from tag
         run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
@@ -73,7 +71,7 @@ jobs:
         run: dotnet build "${{ github.event.repository.name }}/tests" -c Release /p:Version=${VERSION}
             
       - name: Test
-        run: dotnet test "${{ github.event.repository.name }}/tests" -c Release --logger "trx" --framework net10.0
+        run: dotnet test "${{ github.event.repository.name }}/tests" -c Release --logger "trx"
             
       - name: Pack `Textures`
         run: dotnet pack "${{ github.event.repository.name }}/source" /p:Version=${VERSION} --no-build --output .
