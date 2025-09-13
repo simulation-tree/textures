@@ -38,7 +38,11 @@ namespace Textures.Components
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(version, width, height);
+            int hash = 17;
+            hash = hash * 31 + version;
+            hash = hash * 31 + width;
+            hash = hash * 31 + height;
+            return hash;
         }
 
         public static bool operator ==(IsTexture left, IsTexture right)
